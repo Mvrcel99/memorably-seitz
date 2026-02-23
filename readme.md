@@ -57,7 +57,7 @@ http://localhost:3000/api/v1/health
 
 ---
 
-## Frontend starten (falls vorhanden)
+## Frontend starten
 
 ```bash
 cd frontend
@@ -67,4 +67,3 @@ npm run dev
 
 ---
 
-Fertig.
