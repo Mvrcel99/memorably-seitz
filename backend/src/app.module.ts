@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ProductsModule } from './products/products.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AdminModule } from './admin/admin.module';
+import { HotelModule } from './hotel/hotel.module';
 
 
 
@@ -14,6 +15,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       synchronize: false,
       autoLoadEntities: true,
     }),
+    AdminModule,
+    HotelModule,
   ],
   controllers: [AppController],
   providers: [AppService],
