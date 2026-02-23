@@ -1,1 +1,11 @@
-hi
+Docker installieren
+
+Docker starten
+docker compose up -d
+
+Postgres führt die schema.sql nur beim ersten Start aus (wenn das Datenverzeichnis leer ist).
+Wenn ihr schema.sql ändert und neu laden wollt:
+
+docker compose down -v
+docker compose up -d
+
