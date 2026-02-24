@@ -2,22 +2,15 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BewertungModule } from './bewertung/bewertung.module';
-import { BuchungZimmerModule } from './buchung-zimmer/buchung-zimmer.module';
-import { BuchungModule } from './buchung/buchung.module';
-import { ZahlungsmethodeModule } from './zahlungsmethode/zahlungsmethode.module';
-import { ZimmerBildModule } from './zimmer-bild/zimmer-bild.module';
-import { ZimmerModule } from './zimmer/zimmer.module';
-import { ZimmertypModule } from './zimmertyp/zimmertyp.module';
-import { HotelAusstattungModule } from './hotel-ausstattung/hotel-ausstattung.module';
-import { AusstattungModule } from './ausstattung/ausstattung.module';
-import { HotelBildModule } from './hotel-bild/hotel-bild.module';
-import { HotelModule } from './hotel/hotel.module';
-import { HotelbesitzerModule } from './benutzer/hotelbesitzer/hotelbesitzer.module';
-import { KundeModule } from './benutzer/kunde/kunde.module';
-import { BenutzerModule } from './benutzer/benutzer.module';
-
-
+import { HotelsModule } from './hotels/hotels.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { RoomsModule } from './rooms/rooms.module';
+import { FeaturesModule } from './features/features.module';
+import { HotelImageModule } from './images/hotel-image/hotel-image.module';
+import { RoomImageModule } from './images/room-image/room-image.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './_common/auth/auth.module';
+import { CaslModule } from './_common/casl/casl.module';
 
 @Module({
   imports: [
@@ -27,20 +20,19 @@ import { BenutzerModule } from './benutzer/benutzer.module';
       synchronize: false,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
-    HotelModule,
-    BenutzerModule,
-    KundeModule,
-    HotelbesitzerModule,
-    HotelBildModule,
-    AusstattungModule,
-    HotelAusstattungModule,
-    ZimmertypModule,
-    ZimmerModule,
-    ZimmerBildModule,
-    ZahlungsmethodeModule,
-    BuchungModule,
-    BuchungZimmerModule,
-    BewertungModule,
+    HotelsModule,
+    BookingsModule,
+    RoomsModule,
+    FeaturesModule,
+    HotelImageModule,
+    RoomImageModule,
+    UsersModule,
+    AuthModule,
+    CaslModule,
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(process.cwd(), 'uploads'),
+    //   serveRoot: '/uploads', 
+    // })
   ],
   controllers: [AppController],
   providers: [AppService],

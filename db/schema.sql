@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS benutzer (
   strasse     VARCHAR NOT NULL,
   plz         VARCHAR NOT NULL,
   ort         VARCHAR NOT NULL,
+  password_hash VARCHAR NOT NULL,
   CONSTRAINT uq_benutzer_email UNIQUE (email)
 );
 

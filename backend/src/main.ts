@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { AccessGuard } from './common/guards/access/access.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
