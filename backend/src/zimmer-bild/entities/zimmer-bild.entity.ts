@@ -1,4 +1,4 @@
-import { Zimmer } from 'src/zimmer/entities/zimmer.entity';
+import { Zimmer } from '../../zimmer/entities/zimmer.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, Unique, Check, JoinColumn } from 'typeorm';
 
 @Entity('zimmer_bild')

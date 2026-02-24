@@ -1,6 +1,6 @@
-import { Hotel } from 'src/hotel/entities/hotel.entity';
-import { ZimmerBild } from 'src/zimmer-bild/entities/zimmer-bild.entity';
-import { Zimmertyp } from 'src/zimmertyp/entities/zimmertyp.entity';
+import { Hotel } from '../../hotel/entities/hotel.entity';
+import { ZimmerBild } from '../../zimmer-bild/entities/zimmer-bild.entity';
+import { Zimmertyp } from '../../zimmertyp/entities/zimmertyp.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, Unique, Check, JoinColumn } from 'typeorm';
 
 @Entity('zimmer')

@@ -1,4 +1,4 @@
-import { HotelAusstattung } from 'src/hotel-ausstattung/entities/hotel-ausstattung.entity';
+import { HotelAusstattung } from '../../hotel-ausstattung/entities/hotel-ausstattung.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Check } from 'typeorm';
 
 @Entity('ausstattung')
@@ -12,7 +12,7 @@ export class Ausstattung {
   @Column('text')
   beschreibung: string;
 
-  @OneToMany(() => HotelAusstattung, (ha) => ha.ausstattung)
-  hotelAusstattungen: HotelAusstattung[];
+@OneToMany(() => HotelAusstattung, (hotelAusstattung) => hotelAusstattung.ausstattung)
+hotelAusstattungen: HotelAusstattung[];
 }
 

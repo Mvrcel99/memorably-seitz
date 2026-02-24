@@ -25,7 +25,7 @@ import { BenutzerModule } from './benutzer/benutzer.module';
       type: 'postgres',
       url: process.env.DATABASE_URL,
       synchronize: false,
-      autoLoadEntities: true,
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
     HotelModule,
     BenutzerModule,

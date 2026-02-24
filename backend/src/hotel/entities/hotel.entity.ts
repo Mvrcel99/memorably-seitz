@@ -1,8 +1,8 @@
-import { Ausstattung } from 'src/ausstattung/entities/ausstattung.entity';
-import { Hotelbesitzer } from 'src/benutzer/hotelbesitzer/entities/hotelbesitzer.entity';
-import { HotelAusstattung } from 'src/hotel-ausstattung/entities/hotel-ausstattung.entity';
-import { HotelBild } from 'src/hotel-bild/entities/hotel-bild.entity';
-import { Zimmer } from 'src/zimmer/entities/zimmer.entity';
+import { Ausstattung } from '../../ausstattung/entities/ausstattung.entity';
+import { Hotelbesitzer } from '../../benutzer/hotelbesitzer/entities/hotelbesitzer.entity';
+import { HotelAusstattung } from '../../hotel-ausstattung/entities/hotel-ausstattung.entity';
+import { HotelBild } from '../../hotel-bild/entities/hotel-bild.entity';
+import { Zimmer } from '../../zimmer/entities/zimmer.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Check, JoinColumn } from 'typeorm';
 
 @Entity('hotel')

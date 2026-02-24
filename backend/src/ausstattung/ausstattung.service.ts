@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Ausstattung } from './entities/ausstattung.entity';
 import { CreateAusstattungDto } from './dto/create-ausstattung.dto';
 import { UpdateAusstattungDto } from './dto/update-ausstattung.dto';
 
 @Injectable()
 export class AusstattungService {
-  create(createAusstattungDto: CreateAusstattungDto) {
-    return 'This action adds a new ausstattung';
+  constructor(
+    @InjectRepository(Ausstattung)
+    private readonly repo: Repository<Ausstattung>,
+  ) {}
+
+  async create(dto: CreateAusstattungDto): Promise<Ausstattung> {
+    const neueAusstattung = this.repo.create(dto);
+    return await this.repo.save(neueAusstattung);
   }
 
-  findAll() {
-    return `This action returns all ausstattung`;
+  async findAll(): Promise<Ausstattung[]> {
+    return await this.repo.find({
+      order: { ausstattung_id: 'ASC' },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ausstattung`;
+  async findOne(id: number): Promise<Ausstattung> {
+    const item = await this.repo.findOneBy({ ausstattung_id: id });
+    if (!item) throw new NotFoundException(`Ausstattung #${id} nicht gefunden`);
+    return item;
   }
 
-  update(id: number, updateAusstattungDto: UpdateAusstattungDto) {
-    return `This action updates a #${id} ausstattung`;
+  async update(id: number, dto: UpdateAusstattungDto): Promise<Ausstattung> {
+    const result = await this.repo.update(id, dto);
+    
+    if (result.affected === 0) {
+      throw new NotFoundException(`Ausstattung #${id} existiert nicht`);
+    }
+    
+    return this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} ausstattung`;
+  async remove(id: number): Promise<void> {
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Ausstattung #${id} konnte nicht gelöscht werden`);
+    }
   }
 }

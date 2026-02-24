@@ -1,7 +1,7 @@
-import { Kunde } from 'src/benutzer/kunde/entities/kunde.entity';
-import { Bewertung } from 'src/bewertung/entities/bewertung.entity';
-import { BuchungZimmer } from 'src/buchung-zimmer/entities/buchung-zimmer.entity';
-import { Zahlungsmethode } from 'src/zahlungsmethode/entities/zahlungsmethode.entity';
+import { Kunde } from '../../benutzer/kunde/entities/kunde.entity';
+import { Bewertung } from '../../bewertung/entities/bewertung.entity';
+import { BuchungZimmer } from '../../buchung-zimmer/entities/buchung-zimmer.entity';
+import { Zahlungsmethode } from '../../zahlungsmethode/entities/zahlungsmethode.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, OneToOne, JoinColumn, Check } from 'typeorm';
 
 @Entity('buchung')

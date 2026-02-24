@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
-import { Hotel } from 'src/hotel/entities/hotel.entity';
-import { Ausstattung } from 'src/ausstattung/entities/ausstattung.entity';
+import { Hotel } from '../../hotel/entities/hotel.entity';
+import { Ausstattung } from '../../ausstattung/entities/ausstattung.entity';
 
 @Entity('hotel_ausstattung')
 // Abbildung des Index aus deinem SQL: ON hotel_ausstattung (hotel_id, ausstattung_id)
@@ -19,9 +19,7 @@ export class HotelAusstattung {
   @JoinColumn({ name: 'hotel_id' })
   hotel: Hotel;
 
-  @ManyToOne(() => Ausstattung, (ausstattung) => ausstattung.hotelAusstattungen, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'ausstattung_id' })
-  ausstattung: Ausstattung;
+@ManyToOne(() => Ausstattung, (ausstattung) => ausstattung.hotelAusstattungen)
+@JoinColumn({ name: 'ausstattung_id' })
+ausstattung: Ausstattung;
 }

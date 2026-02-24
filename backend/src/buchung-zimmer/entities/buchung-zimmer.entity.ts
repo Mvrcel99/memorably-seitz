@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, Check, PrimaryColumn } from 'typeorm';
-import { Buchung } from 'src/buchung/entities/buchung.entity';
-import { Zimmer } from 'src/zimmer/entities/zimmer.entity';
+import { Buchung } from '../../buchung/entities/buchung.entity';
+import { Zimmer } from '../../zimmer/entities/zimmer.entity';
 
 @Entity('buchung_zimmer')
 @Check(`"anzahl_gaeste" > 0`)

@@ -1,5 +1,5 @@
 import { Entity, Column, OneToOne, JoinColumn, Check, PrimaryColumn } from 'typeorm';
-import { Buchung } from 'src/buchung/entities/buchung.entity';
+import { Buchung } from '../../buchung/entities/buchung.entity';
 
 @Entity('bewertung')
 @Check(`"sterne" BETWEEN 1 AND 5`)
