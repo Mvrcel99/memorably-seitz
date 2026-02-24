@@ -29,7 +29,7 @@ export class Benutzer {
   @Column()
   ort: string;
 
-  @Column({ name: 'password_hash', select: false }) 
+  @Column({ name: 'passwort_hash', select: false }) 
   passwordHash: string;
 
   // Spezialisierungen

@@ -9,13 +9,14 @@ import { OwnerBookingsControllerController } from './controllers/owner-bookings.
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {  Buchung } from './entities/booking.entity';
-import {  BuchungZimmer } from './entities/booking-room';
+import {  BuchungZimmer } from './entities/booking-room.entity';
 import { CaslModule } from '../_common/casl/casl.module';
 import {  Zimmer } from '../rooms/entities/room.entity';
+import { Zahlungsmethode } from './entities/zahlungsmethode.entity';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Buchung, BuchungZimmer, Zimmer]), CaslModule],
+  imports: [TypeOrmModule.forFeature([Buchung, BuchungZimmer, Zimmer, Zahlungsmethode]), CaslModule],
   providers: [BookingsService, PricingService, BookingAvailabilityService],
   controllers: [BookingsController, OwnerBookingsControllerController],
   exports: [BookingAvailabilityService]

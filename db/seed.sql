@@ -5,14 +5,14 @@
 -- -------------------------
 -- Benutzer (4 Kunden, 2 Besitzer)
 -- -------------------------
-INSERT INTO benutzer (email, vorname, nachname, land, strasse, plz, ort)
+INSERT INTO benutzer (email, vorname, nachname, land, strasse, plz, ort, passwort_hash)
 VALUES
-('kunde1@test.de', 'Max', 'Mustermann', 'DE', 'Hauptstr. 1', '89518', 'Heidenheim'),
-('kunde2@test.de', 'Lena', 'Schmidt', 'DE', 'Bahnhofstr. 12', '70173', 'Stuttgart'),
-('kunde3@test.de', 'Paul', 'Weber', 'DE', 'Gartenweg 3', '80331', 'München'),
-('kunde4@test.de', 'Sofia', 'Keller', 'DE', 'Bergstr. 9', '20095', 'Hamburg'),
-('besitzer1@test.de', 'Anna', 'Hotelier', 'DE', 'Marktplatz 5', '89518', 'Heidenheim'),
-('besitzer2@test.de', 'Tom', 'Gastgeber', 'DE', 'Seestr. 21', '87629', 'Füssen');
+('kunde1@test.de', 'Max', 'Mustermann', 'DE', 'Hauptstr. 1', '89518', 'Heidenheim', 'hash1'),
+('kunde2@test.de', 'Lena', 'Schmidt', 'DE', 'Bahnhofstr. 12', '70173', 'Stuttgart' , 'hash1'),
+('kunde3@test.de', 'Paul', 'Weber', 'DE', 'Gartenweg 3', '80331', 'München', 'hash1'),
+('kunde4@test.de', 'Sofia', 'Keller', 'DE', 'Bergstr. 9', '20095', 'Hamburg', 'hash1'),
+('besitzer1@test.de', 'Anna', 'Hotelier', 'DE', 'Marktplatz 5', '89518', 'Heidenheim', 'hash1'),
+('besitzer2@test.de', 'Tom', 'Gastgeber', 'DE', 'Seestr. 21', '87629', 'Füssen', 'hash1');
 
 -- -------------------------
 -- Rollen

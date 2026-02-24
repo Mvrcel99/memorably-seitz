@@ -1,8 +1,9 @@
 
+import { BuchungZimmer } from './booking-room.entity';
+
 import { Bewertung } from '../../bewertung/entities/bewertung.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, OneToOne, JoinColumn, Check } from 'typeorm';
 import { Zahlungsmethode } from './zahlungsmethode.entity';
-import { BuchungZimmer } from './booking-room';
 import { Kunde } from '../../users/kunde.entity';
 
 @Entity('buchung')
