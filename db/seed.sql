@@ -12,7 +12,8 @@ VALUES
 ('kunde3@test.de', 'Paul', 'Weber', 'DE', 'Gartenweg 3', '80331', 'München', 'hash1'),
 ('kunde4@test.de', 'Sofia', 'Keller', 'DE', 'Bergstr. 9', '20095', 'Hamburg', 'hash1'),
 ('besitzer1@test.de', 'Anna', 'Hotelier', 'DE', 'Marktplatz 5', '89518', 'Heidenheim', 'hash1'),
-('besitzer2@test.de', 'Tom', 'Gastgeber', 'DE', 'Seestr. 21', '87629', 'Füssen', 'hash1');
+('besitzer2@test.de', 'Tom', 'Gastgeber', 'DE', 'Seestr. 21', '87629', 'Füssen', 'hash1'),
+('admin@memorably.de', 'Admin', 'User', 'DE', 'Adminstr. 1', '00000', 'AdminCity', 'hash1');
 
 -- -------------------------
 -- Rollen
