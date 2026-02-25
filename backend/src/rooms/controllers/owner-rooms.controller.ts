@@ -24,35 +24,39 @@ export class OwnerRoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  @CheckAbilities({ action: Action.Read, subject: Zimmer })
+  
+  @CheckAbilities({ action: Action.Create, subject: Zimmer }) 
   async createRoom(
     @Param('hotelId') hotelId: string,
     @Body() createRoomDto: CreateRoomDto,
-    @CurrentUser() user : AuthenticatedUser
-  ) {
-    return // this.roomsService.createRoom(hotelId, createRoomDto, user.id);
-  }
-  @Patch(':roomId') // Die vollständige URL ist: /v1/owner/hotels/:hotelId/rooms/:roomId
-  @CheckAbilities({ action: Action.Update, subject: Zimmer })
-  async updateRoom(
-  @Param('hotelId') hotelId: string,
-  @Param('roomId') roomId: string,
-  @Body() updateRoomDto: UpdateRoomDto,
-  @CurrentUser() user: AuthenticatedUser
-  ) {
-  return //this.roomsService.updateRoom(roomId, hotelId, updateRoomDto, user.id);
-}
-
-
-
-
-  @Delete(':roomId') //  URL: DELETE /v1/owner/hotels/:hotelId/rooms/:roomId
-  @CheckAbilities({ action: Action.Delete, subject: Zimmer }) 
-  async deleteRoom(
-    @Param('roomId') roomId: string,
     @CurrentUser() user: AuthenticatedUser
   ) {
-    //await this.roomsService.deleteRoom(roomId, user.id);
-    return { message: 'Zimmer erfolgreich gelöscht' };
+    
+    return this.roomsService.createRoom(hotelId, createRoomDto, user.id);
   }
+
+  @Patch(':roomId') 
+  @CheckAbilities({ action: Action.Update, subject: Zimmer })
+  async updateRoom(
+    @Param('hotelId') hotelId: string,
+    @Param('roomId') roomId: string,
+    @Body() updateRoomDto: UpdateRoomDto,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+   
+    return this.roomsService.updateRoom(roomId, hotelId, updateRoomDto, user.id);
+  }
+
+  @Delete(':roomId')
+async delete(
+  @Param('hotelId') hotelId: string,
+  @Param('roomId') roomId: string,
+  @Req() req: any 
+) {
+
+  const userId = req.user.id; 
+  const userRole = req.user.role;
+
+  return this.roomsService.deleteRoom(roomId, userId, userRole);
+}
 }

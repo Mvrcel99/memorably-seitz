@@ -1,76 +1,108 @@
 import { Injectable, ForbiddenException, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-// import { Room } from '../entities/room.entity'; 
+import { Zimmer } from '../entities/room.entity';
 import { CreateRoomDto } from '../dto/create-room.dto'; 
 import { UpdateRoomDto } from '../dto/update-room.dto';
 
 @Injectable()
 export class RoomsService {
-//   constructor(
-//     @InjectRepository(Room)
-//     private readonly roomRepository: Repository<Room>,
-//   ) {}
+  constructor(
+    @InjectRepository(Zimmer)
+    private readonly zimmerRepository: Repository<Zimmer>,
+  ) {}
 
-
-//    // create-room.dto.ts
-//   async createRoom(hotelId: string, dto: CreateRoomDto, ownerId: number) {
-
-//     const existingRoom = await this.roomRepository.findOne({
-//     where: { 
-//       hotelId: hotelId, 
-//       roomNumber: dto.roomNumber 
-//     },
-//   });
-
-//   if (existingRoom) {
-//     throw new ConflictException(
-//       `Raum Nummer ${dto.roomNumber} ist bereits für dieses Hotel ${existingRoom.hotelId} registriert.`
-//     );
-//   }
   
-//     const newRoom = this.roomRepository.create({
-//       ...dto,
-//       hotelId: hotelId,
-//       ownerId: ownerId,
-//     });
+  async createRoom(hotelId: string, dto: CreateRoomDto, ownerId: number) {
+    const hId = parseInt(hotelId);
 
-//     return await this.roomRepository.save(newRoom);
-//   }
-//   // Update-Room.dto.ts
-// async updateRoom(roomId: string, hotelId: string, dto: UpdateRoomDto, ownerId: number) {
+    const existingRoom = await this.zimmerRepository.findOne({
+      where: { 
+        hotel: { hotel_id: hId } as any, 
+        zimmernr_hotel: dto.zimmernr_hotel 
+      },
+    });
 
-//   const room = await this.roomRepository.findOne({ 
-//     where: { id: roomId, hotelId: hotelId, ownerId: ownerId } 
-//   });
+    if (existingRoom) {
+      throw new ConflictException(
+        `Zimmer Nummer ${dto.zimmernr_hotel} existiert bereits in diesem Hotel.`
+      );
+    }
+    
+    const newRoom = this.zimmerRepository.create({
+      ...dto,
+      hotel: { hotel_id: hId } as any,
+      zimmertyp: { id: dto.zimmertyp_id } as any
+    });
 
-//   if (!room) {
-//     throw new ForbiddenException('Zimmer nicht gefunden oder keine Berechtigung');
-//   }
+    return await this.zimmerRepository.save(newRoom);
+  }
 
-//   Object.assign(room, dto);
+  
+  async updateRoom(roomId: string, hotelId: string, dto: UpdateRoomDto, userId: number) {
+    const zId = parseInt(roomId);
+    const hId = parseInt(hotelId);
 
-//   return await this.roomRepository.save(room);
-// }
-// async deleteRoom(roomId: string, userId: number): Promise<void> {
+    const room = await this.zimmerRepository.findOne({ 
+      where: { 
+        zimmer_id: zId, 
+        hotel: { hotel_id: hId } as any 
+      },
+      relations: ['hotel', 'hotel.besitzer'] 
+    });
 
-//   const room = await this.roomRepository.findOne({ 
-//     where: { id: roomId },
-//     relations: ['hotel'] 
-//   });
+    if (!room) {
+      throw new NotFoundException('Zimmer wurde nicht gefunden');
+    }
 
+   
+    const hotelBesitzerId = (room.hotel as any).besitzer_id || (room.hotel as any).besitzer?.benutzer_id;
+    if (Number(hotelBesitzerId) !== Number(userId)) {
+      throw new ForbiddenException('Keine Berechtigung zum Bearbeiten dieses Zimmers');
+    }
 
-//   if (!room) {
-//     throw new NotFoundException('Zimmer wurde nicht gefunden');
-//   }
+    Object.assign(room, dto); 
+    return await this.zimmerRepository.save(room);
+  }
 
+  async deleteRoom(roomId: string, userId: any, userRole: string): Promise<void> {
+    const zId = parseInt(roomId);
 
-//   if (room.hotel.ownerId !== userId) {
-//     throw new ForbiddenException('Keine Berechtigung: Dieses Hotel gehört dir nicht.');
-//   }
+   
+    let room;
+    try {
+      room = await this.zimmerRepository.findOne({ 
+        where: { zimmer_id: zId },
+        relations: ['hotel', 'hotel.besitzer'] 
+      });
+    } catch (error) {
+     
+      throw new ConflictException('Datenbankfehler beim Abrufen des Zimmers.');
+    }
 
+  
+    if (!room) {
+      throw new NotFoundException(`Zimmer mit der ID ${roomId} existiert nicht.`);
+    }
 
-//   await this.roomRepository.remove(room);
-// } // delelteRoom hat keine DTO
+    
+    const hotelBesitzerId = (room.hotel as any).besitzer_id || (room.hotel as any).besitzer?.benutzer_id;
+    const isOwner = Number(hotelBesitzerId) === Number(userId);
+    const isAdmin = userRole === 'admin';
+
+    if (!isOwner && !isAdmin) {
+     
+      throw new ForbiddenException('Zugriff verweigert: Sie sind nicht der Eigentümer dieses Hotels.');
+    }
+
+    
+    try {
+      await this.zimmerRepository.remove(room);
+    } catch (error) {
+    
+      throw new ConflictException(
+        'Das Zimmer konnte nicht gelöscht werden. Möglicherweise bestehen noch aktive Buchungen.'
+      );
+    }
+  }
 }
-

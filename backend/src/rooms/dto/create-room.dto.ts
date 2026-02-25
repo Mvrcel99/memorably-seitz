@@ -1,22 +1,25 @@
 import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
 
 export class CreateRoomDto {
-  @IsNumber()
+  @IsString() 
   @IsNotEmpty()
-  roomNumber: number;
+  zimmernr_hotel: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  bezeichnung: string;
 
   @IsString()
-  description: string;
+  beschreibung: string;
 
   @IsNumber()
-  @Min(1)
-  pricePerNight: number; // In Cent angegeben
-
+  @Min(0)
+  basispreis: number; 
   @IsNumber()
   @Min(1)
-  maxGuests: number;
+  max_anzahl: number; 
+  
+  @IsNumber()
+  @IsNotEmpty()
+  zimmertyp_id: number; 
 }
