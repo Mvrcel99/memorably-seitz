@@ -1,132 +1,111 @@
-import { ForbiddenException, Injectable, NotFoundException,InternalServerErrorException } from '@nestjs/common';
-import { CreateRoomImageDto } from '../dto/create-roomImage.dto';
+import { ForbiddenException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { RoomImage } from '../entities/room-image.entity';
-// import { Repository } from 'typeorm';
-// import { Room } from '../../rooms/entities/room.entity';
+import { Repository } from 'typeorm';
+import { ZimmerBild } from '../entities/room-image.entity';
+import { Zimmer } from '../../../rooms/entities/room.entity';
+import { CreateRoomImageDto } from '../dto/create-roomImage.dto';
 import { UpdateRoomImageDto } from '../dto/update-room-image.dto';
 import * as fs from 'fs/promises';
-import { constants } from 'fs'; 
 import * as path from 'path';
+
 @Injectable()
 export class RoomImagesService {
-    // constructor(
-    //     @InjectRepository(RoomImage)
-    //     private readonly roomImageRepo: Repository<RoomImage>,
-    //     @InjectRepository(Room)
-    //     private readonly roomRepo: Repository<Room>,
-    // ) {}
+    constructor(
+        @InjectRepository(ZimmerBild)
+        private readonly zimmerBildRepo: Repository<ZimmerBild>,
+        @InjectRepository(Zimmer)
+        private readonly zimmerRepo: Repository<Zimmer>,
+    ) {}
 
-    // async createRoomImage(roomId: string, imageUrl:string, dto: CreateRoomImageDto, ownerId:number ){
-    //     const lastImage = await this.roomImageRepo.findOne({
-    //         where: { roomId },
-    //         order: { sort_order: 'DESC' }, 
-    //     });
+    /**
+     * ZIMMER-BILD ERSTELLEN
+     */
+    async createRoomImage(roomId: number, hotelId: number, pfad: string, dto: CreateRoomImageDto, ownerId: number) {
+        // 1. Zimmer laden und prüfen, ob es zum Hotel & Besitzer gehört
+        const zimmer = await this.zimmerRepo.findOne({
+            where: { zimmer_id: roomId, hotel: { hotel_id: hotelId } as any },
+            relations: ['hotel', 'hotel.besitzer']
+        });
+
+        if (!zimmer) {
+            throw new NotFoundException(`Zimmer mit ID ${roomId} wurde in diesem Hotel nicht gefunden.`);
+        }
+
+        // Sicherheits-Check: Gehört das Hotel dem User?
+        if (Number(zimmer.hotel.besitzer?.benutzer_id) !== Number(ownerId)) {
+            throw new ForbiddenException('Du bist nicht der Besitzer dieses Hotels.');
+        }
+
+        // 2. Datenbankeintrag erstellen
+        const neuesBild = this.zimmerBildRepo.create({
+            pfad: pfad,
+            alt_text: dto.alt,
+            zimmer: { zimmer_id: roomId } as any
+            // Falls sortOrder in Entity: sort_order: dto.sortOrder
+        });
+
+        const savedImage = await this.zimmerBildRepo.save(neuesBild);
+
+        return {
+            message: 'Raumbild wurde erfolgreich hochgeladen und erstellt.',
+            data: savedImage
+        };
+    }
+
+    /**
+     * ZIMMER-BILD LÖSCHEN (DB + Dateisystem)
+     */
+    async removeRoomImage(id: number, ownerId: number) {
+        // Bild laden mit vollständiger Kette zum Besitzer
+        const image = await this.zimmerBildRepo.findOne({
+            where: { zimmer_bild_id: id },
+            relations: ['zimmer', 'zimmer.hotel', 'zimmer.hotel.besitzer']
+        });
+
+        if (!image) {
+            throw new NotFoundException('Raum-Bild wurde in der Datenbank nicht gefunden.');
+        }
+
+        // Owner-Check
+        const besitzerId = image.zimmer?.hotel?.besitzer?.benutzer_id;
+        if (Number(besitzerId) !== Number(ownerId)) {
+            throw new ForbiddenException('Zugriff verweigert: Sie sind nicht der Besitzer.');
+        }
+
+        // Physische Datei vom Server löschen
+        const filename = image.pfad.replace(/^\//, ''); // Entfernt führenden Slash
+        const fullPath = path.join(process.cwd(), filename);
+
+        try {
+            await fs.access(fullPath); 
+            await fs.unlink(fullPath);
+            console.log(`Datei erfolgreich gelöscht: ${fullPath}`);
+        } catch (err) {
+            console.warn(`Datei konnte im Filesystem nicht gelöscht werden: ${fullPath}`);
+        }
+
+        // Datenbankeintrag löschen
+        return await this.zimmerBildRepo.remove(image);
+    }
+
+    /**
+     * ZIMMER-BILD AKTUALISIEREN
+     */
+    async updateRoomImage(id: number, dto: UpdateRoomImageDto, ownerId: number) {
+        const image = await this.zimmerBildRepo.findOne({
+            where: { zimmer_bild_id: id },
+            relations: ['zimmer', 'zimmer.hotel', 'zimmer.hotel.besitzer']
+        });
+
+        if (!image) throw new NotFoundException('Raum-Bild nicht gefunden');
+
+        if (Number(image.zimmer.hotel.besitzer?.benutzer_id) !== Number(ownerId)) {
+            throw new ForbiddenException('Nicht dein Raum!');
+        }
+
+        // Mapping DTO 'alt' -> DB 'alt_text'
+        if (dto.alt !== undefined) image.alt_text = dto.alt;
         
-        
-
-    //     let finalSortOrder = dto.sortOrder;
-
-    //     if (finalSortOrder !== undefined) {
-    //         const existing = await this.roomImageRepo.findOne({
-    //             where: { roomId, sort_order: finalSortOrder }
-    //         });
-
-    //         if (existing) {
-    //             finalSortOrder = lastImage ? lastImage.sort_order + 1 : 0;
-    //         }
-    //     } else {
-    //         finalSortOrder = lastImage ? lastImage.sort_order + 1 : 0;
-    //     }
-        
-
-    //     const room = await this.roomRepo.findOne({
-    //         where: { id: roomId },
-    //         relations: ['hotel'], 
-    //     });
-
-    //     if (!room) {
-    //         throw new NotFoundException(`Raum mit ID ${roomId} wurde nicht gefunden.`);
-    //     }
-
-    //     if (room.hotel.ownerId !== ownerId) {
-    //         throw new ForbiddenException('Du bist nicht der Besitzer dieses Hotels.');
-    //     }
-
-    //     const newImage = this.roomImageRepo.create({
-    //         roomId: roomId,
-    //         imageUrl: imageUrl,
-    //         alt: dto.alt,
-    //         sort_order: finalSortOrder,
-    //     });
-        
-    //     return await this.roomImageRepo.save(newImage);
-
-    //    const savedImage = await this.roomImageRepo.save(newImage);
-
-    //     // hier : Wir geben die Nachricht + Daten zurück
-    //     return {
-    //         message: 'Raumbild wurde erfolgreich hochgeladen und erstellt.',
-    //         data: savedImage
-    //     };
-    // }
-
-
-    // async updateRoomImage(id: number, dto: UpdateRoomImageDto, ownerId: number) {
-    //     const image = await this.roomImageRepo.findOne({
-    //         where: { id },
-    //         relations: ['room', 'room.hotel'], 
-    //     });
-
-    //     if (!image) throw new NotFoundException('Raum-Bild nicht gefunden');
-
-    //     if (Number(image.room.hotel.ownerId) !== Number(ownerId)) {
-    //         throw new ForbiddenException('Nicht dein Raum!');
-    //     }
-
-    //     if (dto.alt !== undefined) image.alt = dto.alt;
-    //     if (dto.sortOrder !== undefined) image.sort_order = dto.sortOrder;
-
-    //     return await this.roomImageRepo.save(image);
-    // }
-
-    // async removeRoomImage(id: number, ownerId: number) {
-    
-    //     const image = await this.roomImageRepo.findOne({
-    //         where: { id },
-    //         relations: ['room', 'room.hotel']
-    //     });
-
-        
-    //     if (!image) {
-    //         throw new NotFoundException('Raum-Bild wurde in der Datenbank nicht gefunden.');
-    //     }
-
-        
-    //     if (!image.room || !image.room.hotel) {
-    //         throw new InternalServerErrorException('Datenintegritätsfehler: Bild ist keinem Hotel zugeordnet.');
-    //     }
-
-    //     if (Number(image.room.hotel.ownerId) !== Number(ownerId)) {
-    //         throw new ForbiddenException('Zugriff verweigert: Sie sind nicht der Besitzer dieses Hotels.');
-    //     }
-
-        
-    //     const filename = image.imageUrl.replace(/^\//, ''); 
-    //     const fullPath = path.join(process.cwd(), filename);
-
-        
-    //     try {
-            
-    //         await fs.access(fullPath); 
-    //         await fs.unlink(fullPath);
-    //         console.log(`Datei erfolgreich gelöscht: ${fullPath}`);
-    //     } catch (err) {
-
-    //         console.warn(`Datei konnte nicht im Filesystem gelöscht werden (evtl. schon weg): ${fullPath}`);
-    //     }
-
-       
-    //     return await this.roomImageRepo.remove(image);
-    // }
+        return await this.zimmerBildRepo.save(image);
+    }
 }

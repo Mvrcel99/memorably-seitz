@@ -1,81 +1,79 @@
 import { InjectRepository } from '@nestjs/typeorm';
-// import { Feature } from '../entities/feature.entity';
+import { Ausstattung } from '../entities/feature.entity';
 import { Repository } from 'typeorm';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { UpdateFeatureDto } from '../dto/update-feature.dto';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+
 @Injectable()
 export class FeaturesService {
 
-//     constructor(
-//     @InjectRepository(Feature) private readonly featureRepo: Repository<Feature>
-//     ){}
+    constructor(
+        @InjectRepository(Ausstattung) 
+        private readonly featureRepo: Repository<Ausstattung>
+    ) {}
 
-//     async findAll(): Promise<Feature[]> {
-//         return this.featureRepo.find();
-//     }
-//     //create Methode
-//     async create(dto: CreateFeatureDto): Promise<Feature> {
-//         const newFeature = this.featureRepo.create(dto);
-//         return await this.featureRepo.save(newFeature);
-//     }
+    async findAll(): Promise<Ausstattung[]> {
+        return this.featureRepo.find();
+    }
 
-//     //update Methode 
-//     async update(id: number, dto: UpdateFeatureDto): Promise<any> {
-//   const feature = await this.featureRepo.findOne({ where: { id } });
-  
-//   if (!feature) {
-//     throw new NotFoundException(`Feature mit ID ${id} nicht gefunden`);
-//   }
+    async create(dto: CreateFeatureDto): Promise<Ausstattung> {
+        // Da dein DTO nur 'label' hat, mappen wir es auf 'titel'
+        // Falls du keine Beschreibung im DTO hast, setzen wir einen Standardwert
+        const newFeature = this.featureRepo.create({
+            titel: dto.titel,
+            beschreibung: 'Keine Beschreibung verfügbar' // Oder du erweiterst dein DTO
+        });
+        return await this.featureRepo.save(newFeature);
+    }
 
-//   feature.label = dto.label;
+    async update(id: number, dto: UpdateFeatureDto): Promise<any> {
+        // Suche nach 'ausstattung_id'
+        const feature = await this.featureRepo.findOne({ where: { ausstattung_id: id } });
+        
+        if (!feature) {
+            throw new NotFoundException(`Ausstattung mit ID ${id} nicht gefunden`);
+        }
 
-//   try {
-//         const updatedFeature = await this.featureRepo.save(feature);
-//         return {
-//         message: 'Feature erfolgreich aktualisiert',
-//         id: updatedFeature.id,
-//         newLabel: updatedFeature.label
-//         };
-//     } catch (error) {
-//         if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-//         throw new ConflictException('Dieses Feature-Label existiert bereits!');
-//         }
-//         throw error;
-//     }
-//     }
+        // Mapping von DTO 'titel' auf Entity 'titel'
+        if (dto.titel) {
+            feature.titel = dto.titel;
+        }
+
+        try {
+            const updatedFeature = await this.featureRepo.save(feature);
+            return {
+                message: 'Ausstattung erfolgreich aktualisiert',
+                id: updatedFeature.ausstattung_id,
+                newTitle: updatedFeature.titel
+            };
+        } catch (error) {
+            if (error.code === '23505' || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+                throw new ConflictException('Diese Ausstattung existiert bereits!');
+            }
+            throw error;
+        }
+    }
     
-//     //delete Methode
-//         async delete(id: number): Promise<any> {
-//     try {
-  
-//         const result = await this.featureRepo.delete(id);
+    async delete(id: number): Promise<any> {
+        try {
+            // Löschen über 'ausstattung_id' geschieht implizit durch Übergabe der ID
+            const result = await this.featureRepo.delete(id);
 
-    
-//         if (result.affected === 0) {
-//         throw new NotFoundException(`Feature mit ID ${id} existiert nicht oder wurde bereits gelöscht.`);
-//         }
+            if (result.affected === 0) {
+                throw new NotFoundException(`Ausstattung mit ID ${id} existiert nicht.`);
+            }
 
-//     return {
-//         success: true,
-//         message: `Feature mit ID ${id} wurde erfolgreich gelöscht`,
-//         };
-
-//     } catch (error) {
-    
-//         if (error instanceof NotFoundException) {
-//         throw error;
-//         }
-
-    
-//         if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY' || error.code === '23503') {
-//         throw new ConflictException('Löschen nicht möglich: Feature wird noch verwendet.');
-//         }
-
-    
-//         console.error(error); 
-//         throw new InternalServerErrorException('Ein unerwarteter Serverfehler ist aufgetreten');
-//     }
-//     }
+            return {
+                success: true,
+                message: `Ausstattung mit ID ${id} wurde erfolgreich gelöscht`,
+            };
+        } catch (error) {
+            if (error instanceof NotFoundException) throw error;
+            if (error.code === '23503' || error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
+                throw new ConflictException('Löschen nicht möglich: Diese Ausstattung wird noch verwendet.');
+            }
+            throw new InternalServerErrorException('Ein unerwarteter Serverfehler ist aufgetreten');
+        }
+    }
 }
