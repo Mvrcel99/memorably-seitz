@@ -18,24 +18,23 @@ export class FeaturesService {
     }
 
     async create(dto: CreateFeatureDto): Promise<Ausstattung> {
-        // Da dein DTO nur 'label' hat, mappen wir es auf 'titel'
-        // Falls du keine Beschreibung im DTO hast, setzen wir einen Standardwert
+    
         const newFeature = this.featureRepo.create({
             titel: dto.titel,
-            beschreibung: 'Keine Beschreibung verfügbar' // Oder du erweiterst dein DTO
+            beschreibung: 'Keine Beschreibung verfügbar' 
         });
         return await this.featureRepo.save(newFeature);
     }
 
     async update(id: number, dto: UpdateFeatureDto): Promise<any> {
-        // Suche nach 'ausstattung_id'
+      
         const feature = await this.featureRepo.findOne({ where: { ausstattung_id: id } });
         
         if (!feature) {
             throw new NotFoundException(`Ausstattung mit ID ${id} nicht gefunden`);
         }
 
-        // Mapping von DTO 'titel' auf Entity 'titel'
+        
         if (dto.titel) {
             feature.titel = dto.titel;
         }
@@ -57,7 +56,7 @@ export class FeaturesService {
     
     async delete(id: number): Promise<any> {
         try {
-            // Löschen über 'ausstattung_id' geschieht implizit durch Übergabe der ID
+          
             const result = await this.featureRepo.delete(id);
 
             if (result.affected === 0) {

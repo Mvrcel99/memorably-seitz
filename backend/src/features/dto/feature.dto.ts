@@ -1,5 +1,5 @@
 export class FeatureDto {
-  ausstattung_id: number; // Geändert von 'id'
+  ausstattung_id: number; 
   titel: string;
   beschreibung: string;
 }

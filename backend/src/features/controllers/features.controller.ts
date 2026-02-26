@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { FeaturesService } from '../services/features.service';
 
 @Controller({
-  path: 'ausstattung', // Geändert von 'features' auf 'ausstattung'
+  path: 'ausstattung', 
   version: '1',
 })
 export class FeaturesController {
@@ -10,7 +10,7 @@ export class FeaturesController {
 
   @Get()
   async getFeatures() {
-    // Gibt alle Einträge aus der Tabelle 'ausstattung' zurück
+    
     return this.ausstattungService.findAll();
   }
 }

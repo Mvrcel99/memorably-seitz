@@ -9,11 +9,11 @@ import type { AuthenticatedUser } from '../../../_common/casl/casl.utils';
 import { CreateRoomImageDto } from '../dto/create-roomImage.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../../../_common/multer/upload';
-import { ZimmerBild } from '../entities/room-image.entity'; // Import auf deine Entity angepasst
+import { ZimmerBild } from '../entities/room-image.entity'; 
 import { UpdateRoomImageDto } from '../dto/update-room-image.dto';
 
 @Controller({
-    path: 'owner/hotels/:hotelId/rooms/:roomId/images', // Pfad an die Hierarchie angepasst
+    path: 'owner/hotels/:hotelId/rooms/:roomId/images', 
     version: '1'
 })
 @UseGuards(AuthGuard, AbilitiesGuard)
@@ -21,9 +21,7 @@ export class OwnerRoomImagesController {
 
     constructor(private readonly roomImageService: RoomImagesService) {}
 
-    /**
-     * ZIMMER-BILD HOCHLADEN
-     */
+    
     @Post()
     @CheckAbilities({ action: Action.Create, subject: ZimmerBild }) 
     @UseInterceptors(FileInterceptor('image', multerOptions('room', 'roomId')))
@@ -34,10 +32,10 @@ export class OwnerRoomImagesController {
         @Body() createRoomImageDto: CreateRoomImageDto,
         @CurrentUser() user: AuthenticatedUser
     ) {
-        // Pfad für die DB generieren
+     
         const pfad = `/images/${file.filename}`;
         
-        // hotelId wird mitgegeben, um sicherzustellen, dass das Zimmer zum Hotel gehört
+        
         return this.roomImageService.createRoomImage(
             roomId, 
             hotelId, 
@@ -47,9 +45,7 @@ export class OwnerRoomImagesController {
         );
     }
 
-    /**
-     * ZIMMER-BILD DATEN AKTUALISIEREN
-     */
+   
     @Patch(':bildId')
     @CheckAbilities({ action: Action.Update, subject: ZimmerBild }) 
     async updateRoomImage(
@@ -60,9 +56,7 @@ export class OwnerRoomImagesController {
         return this.roomImageService.updateRoomImage(bildId, updateRoomImageDto, user.id);
     }
 
-    /**
-     * ZIMMER-BILD LÖSCHEN
-     */
+    
     @Delete(':bildId')
     @CheckAbilities({ action: Action.Delete, subject: ZimmerBild }) 
     async removeRoomImage(

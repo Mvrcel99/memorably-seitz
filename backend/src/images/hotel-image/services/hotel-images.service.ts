@@ -15,13 +15,11 @@ export class HotelImagesService {
         private readonly hotelRepo: Repository<Hotel>,
     ) {}
 
-    /**
-     * BILD ERSTELLEN
-     */
+    
     async createHotelImage(hotelId: string, pfad: string, dto: CreateHotelImageDto, ownerId: number) {
         const hId = parseInt(hotelId);
 
-        // 1. Hotel laden & Owner-Check
+       
         const hotel = await this.hotelRepo.findOne({
             where: { hotel_id: hId },
             relations: ['besitzer']
@@ -31,28 +29,24 @@ export class HotelImagesService {
             throw new NotFoundException(`Hotel mit ID ${hotelId} wurde nicht gefunden.`);
         }
 
-        // Vergleich der besitzer_id
+     
         if (Number(hotel.besitzer?.benutzer_id) !== Number(ownerId)) {
             throw new ForbiddenException('Du bist nicht der Besitzer dieses Hotels.');
         }
 
-        // 2. Sortierreihenfolge berechnen (Logik aus deinem Entwurf)
+        
         const lastImage = await this.hotelBildRepo.findOne({
             where: { hotel: { hotel_id: hId } as any },
-            // Da 'sortOrder' eventuell noch nicht in deiner DB ist, 
-            // setze ich es hier als Kommentar, falls du es noch hinzufügen musst.
-            // order: { sortOrder: 'DESC' }, 
+       
         });
 
         let finalSortOrder = dto.sortOrder || 0;
-        // Hier könnte man prüfen, ob die sortOrder bereits belegt ist...
-
-        // 3. Neues Bild anlegen
+      
         const newImage = this.hotelBildRepo.create({
             pfad: pfad,
-            alt_text: dto.alt, // Mapping DTO 'alt' -> DB 'alt_text'
+            alt_text: dto.alt, 
             hotel: { hotel_id: hId } as any,
-            // sortOrder: finalSortOrder // Nur wenn in Entity vorhanden
+           
         });
 
         const savedImage = await this.hotelBildRepo.save(newImage);
@@ -63,9 +57,7 @@ export class HotelImagesService {
         };
     }
 
-    /**
-     * BILD AKTUALISIEREN
-     */
+  
     async updateHotelImage(id: number, updateDto: UpdateHotelImageDto, userId: number) {
         const image = await this.hotelBildRepo.findOne({ 
             where: { hotel_bild_id: id }, 
@@ -76,7 +68,7 @@ export class HotelImagesService {
             throw new NotFoundException(`Bild mit der ID ${id} existiert nicht.`);
         }
 
-        // Berechtigungs-Check
+       
         if (Number(image.hotel.besitzer?.benutzer_id) !== Number(userId)) {
             throw new ForbiddenException('Du darfst nur Bilder deiner eigenen Hotels bearbeiten.');
         }
@@ -85,14 +77,14 @@ export class HotelImagesService {
             throw new BadRequestException('Die Sortierreihenfolge darf nicht negativ sein.');
         }
 
-        // Mapping für Update: alt -> alt_text
+       
         if (updateDto.alt) {
             image.alt_text = updateDto.alt;
         }
         
-        // sortOrder übernehmen, falls vorhanden
+       
         if (updateDto.sortOrder !== undefined) {
-            // image.sortOrder = updateDto.sortOrder;
+            
         }
 
         try {
@@ -102,9 +94,7 @@ export class HotelImagesService {
         }
     }
 
-    /**
-     * BILD LÖSCHEN
-     */
+   
     async removeHotelImage(id: number, userId: number) {
         const image = await this.hotelBildRepo.findOne({ 
             where: { hotel_bild_id: id }, 

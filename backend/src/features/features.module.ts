@@ -4,7 +4,7 @@ import { FeaturesService } from './services/features.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ausstattung } from './entities/feature.entity';
 import { HotelAusstattung } from './entities/feature-hotel.entity';
-import { AdminAusstattungController } from './controllers/admin-features.controller'; // Prüfe den Klassennamen
+import { AdminAusstattungController } from './controllers/admin-features.controller'; 
 import { CaslModule } from '../_common/casl/casl.module';
 
 @Module({
@@ -17,6 +17,6 @@ import { CaslModule } from '../_common/casl/casl.module';
     AdminAusstattungController
   ],
   providers: [FeaturesService],
-  exports: [FeaturesService] // WICHTIG: Exportieren, falls andere Module darauf zugreifen
+  exports: [FeaturesService]
 })
 export class FeaturesModule {}

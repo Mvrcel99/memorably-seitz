@@ -3,7 +3,7 @@ import { Entity, PrimaryColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Ausstattung } from './feature.entity';
 
 @Entity('hotel_ausstattung')
-// Abbildung des Index aus deinem SQL: ON hotel_ausstattung (hotel_id, ausstattung_id)
+
 @Index('hotel_ausstattung_index_0', ['hotel_id', 'ausstattung_id'])
 export class HotelAusstattung {
   
