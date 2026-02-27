@@ -2,7 +2,7 @@ import { Hotelbesitzer } from '../../users/hotelbesitzer.entity';
 import { HotelAusstattung } from '../../features/entities/feature-hotel.entity';
 import { HotelBild } from '../../images/hotel-image/entities/hotel-image.entity';
 import { Zimmer } from '../../rooms/entities/room.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, Check, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn, Check } from 'typeorm';
 
 @Entity('hotel')
 @Check(`"hotelsterne" BETWEEN 1 AND 5`)
@@ -16,8 +16,11 @@ export class Hotel {
   @JoinColumn({ name: 'besitzer_id' })
   besitzer: Hotelbesitzer;
 
+  @Column({ name: 'besitzer_id' }) 
+  besitzer_id: number;
+
   @Column()
-  name: string;
+  name: string; // Wichtig: Heißt 'titel', nicht 'name'
 
   @Column('text')
   beschreibung: string;
@@ -37,10 +40,17 @@ export class Hotel {
   @Column()
   ort: string;
 
-  @Column()
+  // Diese beiden Spalten haben gefehlt:
+  @Column('decimal', { precision: 10, scale: 8, nullable: true })
+  latitude: number;
+
+  @Column('decimal', { precision: 11, scale: 8, nullable: true })
+  longitude: number;
+
+  @Column({ default: 0 })
   stornogebuehr_prozent: number;
 
-  @Column()
+  @Column({ default: 24 })
   kostenlos_stornierbar_bis_stunden: number;
 
   @OneToMany(() => HotelBild, (bild) => bild.hotel)
@@ -52,4 +62,3 @@ export class Hotel {
   @OneToMany(() => Zimmer, (zimmer) => zimmer.hotel)
   zimmer: Zimmer[];
 }
-

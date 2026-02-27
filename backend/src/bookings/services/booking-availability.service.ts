@@ -1,84 +1,60 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { Room } from '../../rooms/entities/room.entity';
-import { EntityManager, In, LessThan, MoreThan, Not, Repository } from 'typeorm';
-// import { BookingPosition } from '../entities/booking-room';
-import { BookingStatus } from '../dto/booking-response.dto';
+import { Repository, LessThan, MoreThan, EntityManager } from 'typeorm';
+import { BuchungZimmer } from '../entities/booking-room.entity';
+import { Zimmer } from '../../rooms/entities/room.entity';
 
 @Injectable()
 export class BookingAvailabilityService {
+  constructor(
+    @InjectRepository(BuchungZimmer)
+    private readonly buchungZimmerRepo: Repository<BuchungZimmer>,
+    @InjectRepository(Zimmer)
+    private readonly zimmerRepo: Repository<Zimmer>,
+  ) {}
 
-    // constructor(
-    //     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
-    //     @InjectRepository(BookingPosition) private readonly bookingPositionRepo: Repository<BookingPosition>
-    //     ){}
+  async getAvailableRooms(hotel_id: number, from: Date, to: Date): Promise<Zimmer[]> {
+    // 1. Alle Zimmer des Hotels finden
+    const allRooms = await this.zimmerRepo.find({
+      where: { hotel: { hotel_id: hotel_id } } as any
+    });
 
-    // async getAvailableRooms(hotelId: string, from: Date, to: Date): Promise<Room[]> {
+    // 2. Belegte Zimmer finden
+    const occupiedRoomItems = await this.buchungZimmerRepo.find({
+      relations: ['buchung', 'zimmer', 'zimmer.hotel'],
+      where: {
+        zimmer: { 
+          hotel: { hotel_id: hotel_id } 
+        } as any,
+        buchung: {
+          // STATUS WURDE ENTFERNT, da Spalte in DB nicht existiert
+          checkin: LessThan(to),
+          checkout: MoreThan(from),
+        } as any
+      }
+    });
+
+    const occupiedRoomIds = occupiedRoomItems.map(item => item.zimmer_id);
+
+    // 3. Verfügbare Zimmer filtern
+    return allRooms.filter(room => !occupiedRoomIds.includes(room.zimmer_id));
+  }
+
+  async checkRoom(zimmer_id: number, from: Date, to: Date, manager?: EntityManager): Promise<boolean> {
+    const repo = manager ? manager.getRepository(BuchungZimmer) : this.buchungZimmerRepo;
     
-    //     const searchFrom = new Date(from);
-    //     searchFrom.setUTCHours(0, 0, 0, 0);
+    const count = await repo.count({
+      relations: ['buchung'],
+      where: {
+        zimmer_id: zimmer_id,
+        buchung: {
+          // STATUS WURDE ENTFERNT
+          checkin: LessThan(to),
+          checkout: MoreThan(from),
+        } as any
+      }
+    });
 
-    //     const searchTo = new Date(to);
-    //     searchTo.setUTCHours(0, 0, 0, 0);       
-
-    //     const occupiedRooms = await this.bookingPositionRepo.find({
-    //         relations: { booking: true },
-    //         where: {
-    //             booking: {
-    //                 hotelId: hotelId,
-    //                 status: BookingStatus.CONFIRMED as any, 
-    //                 checkInDate: LessThan(searchTo),
-    //                 checkOutDate: MoreThan(searchFrom)
-    //             }
-    //         },
-    //         select: {
-    //             roomId: true
-    //         }
-    //     });
-
-    //     const occupiedRoomIds = occupiedRooms.map(bp => bp.roomId);
-
-    //     if (occupiedRoomIds.length === 0) {
-    //         return await this.roomRepo.find({
-    //             where: { hotelId },
-    //             select: {id: true}
-
-    //         });
-    //     }
-
-    //     return await this.roomRepo.find({
-    //         where: {
-    //             hotelId,
-    //             id: Not(In(occupiedRoomIds))
-    //         },
-    //         select: {id: true}
-    //     });
-
-        
-    // }
-
-    // async checkRoom(roomId: string, from: Date, to: Date, manager?: EntityManager): Promise<boolean> {
-    //     const repo = manager ? manager.getRepository(BookingPosition) : this.bookingPositionRepo;
-        
-    //     const searchFrom = new Date(from);
-    //     searchFrom.setUTCHours(0, 0, 0, 0);
-
-    //     const searchTo = new Date(to);
-    //     searchTo.setUTCHours(0, 0, 0, 0);   
-        
-    //     const conflictCount = await repo.count({
-    //     relations: { booking: true },
-    //     where: {
-    //         roomId: roomId,
-    //         booking: {
-    //             status: BookingStatus.CONFIRMED as any, 
-    //             checkInDate: LessThan(searchTo),
-    //             checkOutDate: MoreThan(searchFrom)
-    //         }
-    //     }
-    // });
-        
-    //     return conflictCount===0;
-    // }
-
+    return count === 0;
+  }
 }

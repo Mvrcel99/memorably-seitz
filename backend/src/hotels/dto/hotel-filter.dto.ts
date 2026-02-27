@@ -1,18 +1,16 @@
-// Query for Search Parm
-
 import { Type } from "class-transformer";
 import { IsOptional, IsString } from "class-validator";
 
 export class HotelFilterDto {
     @IsOptional()
     @IsString()
-    city?: string;
+    ort?: string; // Geändert von city zu ort
 
     @IsOptional()
-    @Type (()=> Date) //https://github.com/nestjs/nest/issues/631
+    @Type(() => Date)
     from?: Date;
 
     @IsOptional()
-    @Type (()=> Date)
+    @Type(() => Date)
     to?: Date;
 }

@@ -2,16 +2,15 @@ import { Entity, Column, ManyToOne, JoinColumn, Check, PrimaryColumn } from 'typ
 import { Buchung } from './booking.entity';
 import { Zimmer } from '../../rooms/entities/room.entity';
 
-
 @Entity('buchung_zimmer')
 @Check(`"anzahl_gaeste" > 0`)
 @Check(`"preis_pro_nacht" >= 0`)
 export class BuchungZimmer {
 
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'buchungs_id' })
   buchungs_id: number;
 
-  @PrimaryColumn()
+  @PrimaryColumn({ name: 'zimmer_id' })
   zimmer_id: number;
 
   @ManyToOne(() => Buchung, (b) => b.buchungZimmer, { onDelete: 'CASCADE' })
@@ -25,6 +24,14 @@ export class BuchungZimmer {
   @Column()
   anzahl_gaeste: number;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  // Transformer hinzugefügt, damit du direkt mit Zahlen (number) arbeiten kannst
+  @Column('decimal', { 
+    precision: 10, 
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value)
+    }
+  })
   preis_pro_nacht: number;
 }

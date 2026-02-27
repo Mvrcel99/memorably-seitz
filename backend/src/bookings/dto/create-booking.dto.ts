@@ -21,7 +21,7 @@ export class CreateBookingDto {
   howMany: number;
 
   @IsArray()
-  @IsString({ each: true })
+  @IsNumber({}, { each: true }) // Geändert: Zimmer-IDs sind jetzt Zahlen
   @ArrayMinSize(1)
-  roomIds: string[];
+  roomIds: number[];
 }

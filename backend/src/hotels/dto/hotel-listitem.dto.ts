@@ -1,15 +1,12 @@
-// Output Hotel for HotelCards
-
-export class HotelListItemDto{
-    hotelId: string;
+export class HotelListItemDto {
+    hotelId: number; // Als number für hotel_id
     title: string;
-    slug: string;
     city: string;
-    country: string;
     stars: number;
-    longitude?: number | null;
-    latitude?: number | null;
     previewImageUrl: string;
     minPricePerNight: number;
-    featureIds: number[];
+    // Optionale Felder, falls du sie später brauchst:
+    country?: string;
+    slug?: string;
+    featureIds?: number[];
 }

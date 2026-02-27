@@ -1,9 +1,9 @@
-import { IsEmail, IsString, IsDateString, IsNumber, IsArray, IsEnum, ValidateNested, IsDate, IsOptional } from 'class-validator';
+import { IsEmail, IsString, IsDateString, IsNumber, IsArray, IsEnum, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class HotelBookingDto {
-  @IsString()
-  id: string;
+  @IsNumber()
+  id: number; // Geändert auf Number für hotel_id
 
   @IsString()
   title: string;
@@ -13,8 +13,8 @@ export class HotelBookingDto {
 }
 
 export class RoomBookingDto {
-  @IsString()
-  id: string;
+  @IsNumber()
+  id: number; // Geändert auf Number für zimmer_id
 
   @ValidateNested()
   @Type(() => HotelBookingDto)
@@ -34,8 +34,8 @@ export enum BookingStatus {
 }
 
 export class ResponseBookingDto {
-  @IsString()
-  id: string;
+  @IsNumber()
+  id: number; // Geändert für buchungs_id
 
   @IsString()
   bookingCode: string;

@@ -17,7 +17,7 @@ import { CaslModule } from './_common/casl/casl.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      synchronize: false,
+      synchronize: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
     HotelsModule,

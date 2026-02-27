@@ -1,212 +1,192 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-//  import { Booking } from '../entities/booking.entity';
 import { DataSource, In, Repository } from 'typeorm';
+import { Buchung } from '../entities/booking.entity';
+import { BuchungZimmer } from '../entities/booking-room.entity';
+import { Zimmer } from '../../rooms/entities/room.entity';
+import { Kunde } from '../../users/kunde.entity';
 import { CreateBookingDto } from '../dto/create-booking.dto';
-import { BookingStatus, ResponseBookingDto} from '../dto/booking-response.dto';
 import { BookingLookupDto } from '../dto/booking-lookup.dto';
+import { ResponseBookingDto } from '../dto/booking-response.dto';
 import { OwnerResponseBookingDto } from '../dto/booking-ownerResponse.dto';
-// import { Room } from '../../rooms/entities/room.entity';
 import { BookingAvailabilityService } from './booking-availability.service';
-// import { BookingPosition } from '../entities/booking-room';
 
 @Injectable()
 export class BookingsService {
+  constructor(
+    @InjectRepository(Buchung)
+    private readonly bookingRepo: Repository<Buchung>,
+    @InjectRepository(Zimmer)
+    private readonly roomRepo: Repository<Zimmer>,
+    private readonly availabilityService: BookingAvailabilityService,
+    private readonly dataSource: DataSource,
+  ) {}
 
-    // constructor(
-    //     @InjectRepository(Booking) private readonly bookingRepo: Repository<Booking>,
-    //     @InjectRepository(Room) private readonly roomRepo: Repository<Room>,
-    //     private availabilityService: BookingAvailabilityService,
-    //     private readonly dataSource: DataSource,
-    // ) {}
+  async getAllBookingsForOwner(ownerId: number): Promise<OwnerResponseBookingDto[]> {
+    const bookings = await this.bookingRepo.createQueryBuilder('buchung')
+      .leftJoinAndSelect('buchung.buchungZimmer', 'bz')
+      .leftJoinAndSelect('bz.zimmer', 'zimmer')
+      .leftJoinAndSelect('zimmer.hotel', 'hotel')
+      .leftJoinAndSelect('buchung.kunde', 'kunde')
+      .leftJoinAndSelect('kunde.benutzer', 'benutzer')
+      .where('hotel.besitzer_id = :ownerId', { ownerId })
+      .orderBy('buchung.checkin', 'DESC')
+      .getMany();
 
-    // // Public
-    // async createBooking(createBookingDto: CreateBookingDto): Promise<ResponseBookingDto> {
+    return bookings.map(b => this.mapToOwnerResponseDto(b));
+  }
 
-    //     // Datum Überprüfung
-    //     const checkInDate = new Date(createBookingDto.from);
-    //     checkInDate.setUTCHours(0, 0, 0, 0);
+  async createBooking(dto: CreateBookingDto): Promise<ResponseBookingDto> {
+    const checkInDate = new Date(dto.from);
+    const checkOutDate = new Date(dto.to);
 
-    //     const checkOutDate = new Date(createBookingDto.to);
-    //     checkOutDate.setUTCHours(0, 0, 0, 0);
-        
-    //     return await this.dataSource.transaction(async (manager) => {
+    return await this.dataSource.transaction(async (manager) => {
+      if (checkInDate >= checkOutDate) throw new BadRequestException('Check-out muss nach Check-in liegen.');
 
-    //         if (checkInDate >= checkOutDate) {
-    //             throw new BadRequestException('Check-out muss nach Check-in liegen.');
-    //         }
+      const kunde = await manager.getRepository(Kunde).findOne({
+        where: { benutzer: { email: dto.email } },
+        relations: ['benutzer']
+      });
 
-    //         // Räume Laden und checken
-    //         const uniqueRoomIds = [...new Set(createBookingDto.roomIds)];
-    //         const rooms = await this.roomRepo.find({
-    //             where: { id: In(uniqueRoomIds) },
-    //             relations: ['hotel'] 
-    //         });
+      if (!kunde) throw new NotFoundException(`Kunde mit E-Mail ${dto.email} nicht gefunden.`);
 
-    //         if (rooms.length !== uniqueRoomIds.length) {
-    //             throw new NotFoundException('Einer oder mehrere der angefragten Räume existieren nicht.');
-    //         }
+      const uniqueRoomIds = [...new Set(dto.roomIds)];
+      const rooms = await this.roomRepo.find({
+        where: { zimmer_id: In(uniqueRoomIds) },
+        relations: ['hotel']
+      });
 
-    //         // Hotel-Check (alle gleiches Hotel & aktiv)
-    //         const firstHotel = rooms[0].hotel;
-    //         if (!firstHotel.isActive) throw new BadRequestException('Hotel ist inaktiv.');
-    //         if (rooms.some(r => r.hotelId !== firstHotel.id)) {
-    //             throw new BadRequestException('Alle Räume müssen zum selben Hotel gehören.');
-    //         }
+      if (rooms.length !== uniqueRoomIds.length) throw new NotFoundException('Zimmer nicht gefunden.');
 
-    //         // Raum Check
-    //         const conflicts: { roomId: string; reason: string }[] = [];
+      for (const room of rooms) {
+        const isAvailable = await this.availabilityService.checkRoom(room.zimmer_id, checkInDate, checkOutDate, manager);
+        if (!isAvailable) throw new ConflictException(`Zimmer "${room.bezeichnung}" ist belegt.`);
+      }
 
-    //         for (const room of rooms) {
-    //             const isAvailable = await this.availabilityService.checkRoom(
-    //                 room.id, 
-    //                 checkInDate, 
-    //                 checkOutDate,
-    //                 manager
-    //             );
-                
-    //             if (!isAvailable) {
-    //                 conflicts.push({
-    //                     roomId: room.id,
-    //                     reason: "OVERLAPPING_BOOKING"
-    //                 });
-    //             }
-    //         }
+      const nights = Math.max(1, Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+      const totalPrice = rooms.reduce((sum, r) => sum + (Number(r.basispreis) * nights), 0);
 
-    //         if (conflicts.length > 0) {
-    //             throw new ConflictException({
-    //                 error: "ROOM_NOT_AVAILABLE",
-    //                 conflicts: conflicts
-    //             });
-    //         }
+      const booking = manager.create(Buchung, {
+        checkin: checkInDate,
+        checkout: checkOutDate,
+        anzahl_gaeste: dto.howMany,
+        preis_pro_nacht: totalPrice / nights,
+        zahlungsdatum: new Date(),
+        kunde_id: kunde.benutzer_id,
+        zahlungsmethode_id: 1
+      });
 
-    //         // Preis für nächte berechnen
+      const savedBooking = await manager.save(booking);
 
-    //         const d1 = new Date(checkInDate);
-    //         const d2 = new Date(checkOutDate);
+      const positions = rooms.map(room => manager.create(BuchungZimmer, {
+        buchungs_id: savedBooking.buchungs_id,
+        zimmer_id: room.zimmer_id,
+        anzahl_gaeste: Math.ceil(dto.howMany / rooms.length),
+        preis_pro_nacht: room.basispreis
+      }));
 
-    //         d1.setHours(12, 0, 0, 0);
-    //         d2.setHours(12, 0, 0, 0);
+      await manager.save(positions);
+      return this.mapToResponseDto(savedBooking, rooms);
+    });
+  }
 
-    //         const nights = Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-    //         let totalPrice = 0;
-    //         rooms.forEach(r => totalPrice += (r.pricePerNight * nights));
+  async getBookingFromUser(query: BookingLookupDto): Promise<ResponseBookingDto> {
+    const booking = await this.bookingRepo.findOne({
+      where: {
+        buchungs_id: Number(query.bookingCode),
+        kunde: { benutzer: { email: query.email } }
+      },
+      relations: ['buchungZimmer', 'buchungZimmer.zimmer', 'buchungZimmer.zimmer.hotel', 'kunde', 'kunde.benutzer']
+    });
 
-    //         const booking = this.bookingRepo.create({
-    //             email: createBookingDto.email,
-    //             firstName: createBookingDto.firstName,
-    //             lastName: createBookingDto.lastName,
-    //             checkInDate: checkInDate,
-    //             checkOutDate: checkOutDate,
-    //             status: BookingStatus.CONFIRMED as any,
-    //             hotelId: firstHotel.id,
-    //             guests: createBookingDto.howMany,
-    //             totalPrice: totalPrice,
-    //             bookingCode: 'PENDING',
-    //         });
-            
-    //         const savedBooking = await manager.save(booking);
-    //         savedBooking.bookingCode = savedBooking.id.substring(0, 8).toUpperCase();
-    //         await manager.save(savedBooking);
+    if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
+    return this.mapToResponseDto(booking, booking.buchungZimmer.map(bz => bz.zimmer));
+  }
 
-    //         const positions = rooms.map(room => {
-    //             return manager.create(BookingPosition, {
-    //                 bookingId: savedBooking.id,
-    //                 roomId: room.id,
-    //                 pricePerNight: room.pricePerNight
-    //             });
-    //         });
+  async cancelBooking(query: BookingLookupDto): Promise<ResponseBookingDto> {
+    const booking = await this.bookingRepo.findOne({
+      where: {
+        buchungs_id: Number(query.bookingCode),
+        kunde: { benutzer: { email: query.email } }
+      },
+      relations: ['buchungZimmer', 'buchungZimmer.zimmer', 'buchungZimmer.zimmer.hotel', 'kunde', 'kunde.benutzer']
+    });
 
-    //         await manager.save(positions);
-    //         return this.mapToResponseDto(savedBooking, rooms);
-    //     });
-    // }
+    if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
+    if (booking.stornodatum) throw new BadRequestException('Bereits storniert.');
 
-    // async getBookingFromUser(dto: BookingLookupDto): Promise<ResponseBookingDto> {
-    //     const booking = await this.bookingRepo.findOne({
-    //         where: { email: dto.email, bookingCode: dto.bookingCode },
-    //         relations: ['hotel', 'positions', 'positions.room']
-    //     });
+    booking.stornodatum = new Date();
+    const saved = await this.bookingRepo.save(booking);
+    return this.mapToResponseDto(saved, booking.buchungZimmer.map(bz => bz.zimmer));
+  }
 
-    //     if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
-    //     return this.mapToResponseDto(booking);
-    // }
+  private mapToOwnerResponseDto(b: Buchung): OwnerResponseBookingDto {
+    const checkinDate = new Date(b.checkin);
+    const checkoutDate = new Date(b.checkout);
+    const nights = Math.max(1, Math.floor((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)));
 
-    // async cancelBookingFromUser(bookingLookupDto: BookingLookupDto): Promise<ResponseBookingDto> {
-    //     const booking = await this.bookingRepo.findOne({
-    //         where: { email: bookingLookupDto.email, bookingCode: bookingLookupDto.bookingCode }
-    //     });
+    const totalRaw = b.buchungZimmer?.reduce((sum, bz) => sum + (Number(bz.zimmer?.basispreis) * nights), 0) || 0;
+    const total = parseFloat(totalRaw.toFixed(2));
+    const net = parseFloat((total / 1.19).toFixed(2));
 
-    //     if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
-    //     if (booking.status === BookingStatus.CANCELLED) throw new BadRequestException('Buchung ist bereits storniert.');
+    return {
+      id: b.buchungs_id,
+      bookingCode: `RES-${b.buchungs_id}-${checkinDate.getFullYear()}`,
+      status: (b.stornodatum ? 'CANCELLED' : 'CONFIRMED') as any,
+      firstName: b.kunde?.benutzer?.vorname || 'N/A',
+      lastName: b.kunde?.benutzer?.nachname || 'N/A',
+      email: b.kunde?.benutzer?.email || 'N/A',
+      from: checkinDate.toISOString().split('T')[0],
+      to: checkoutDate.toISOString().split('T')[0],
+      howMany: b.anzahl_gaeste,
+      rooms: b.buchungZimmer?.map(bz => ({
+        id: bz.zimmer?.zimmer_id,
+        name: bz.zimmer?.bezeichnung,
+        pricePerNight: parseFloat(Number(bz.zimmer?.basispreis).toFixed(2)),
+        hotel: {
+          id: bz.zimmer?.hotel?.hotel_id,
+          title: bz.zimmer?.hotel?.name, // Wieder 'name' statt 'titel'
+          city: bz.zimmer?.hotel?.ort
+        }
+      })) || [],
+      totalPrice: total,
+      netAmount: net,
+      createdAt: b.zahlungsdatum ? new Date(b.zahlungsdatum).toISOString() : new Date().toISOString(),
+      stornoDate: b.stornodatum ? new Date(b.stornodatum).toISOString() : null
+    };
+  }
 
-    //     booking.status = BookingStatus.CANCELLED as any;
-    //     booking.stornoDate = new Date();
-        
-    //     await this.bookingRepo.save(booking);
+  private mapToResponseDto(booking: Buchung, rooms: Zimmer[]): ResponseBookingDto {
+    const checkinDate = new Date(booking.checkin);
+    const checkoutDate = new Date(booking.checkout);
+    const nights = Math.max(1, Math.floor((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24)));
 
-    //     return this.getBookingFromUser(bookingLookupDto);
-    // }
-
-    // // Owner
-    // async getAllBookingsForOwner(userID: number): Promise<OwnerResponseBookingDto[]> {
-    //     const bookings = await this.bookingRepo.find({
-    //         where: { hotel: { ownerId: userID } },
-    //         relations: ['hotel', 'positions', 'positions.room'],
-    //     });
-
-    //     return bookings.map(b => this.mapToResponseDto(b));
-    // }
-
-    // // utils
-
-    // private mapToResponseDto(booking: Booking, rooms?: Room[]): ResponseBookingDto {
-    //     const response = new ResponseBookingDto();
-        
-    //     response.id = booking.id;
-    //     response.bookingCode = booking.bookingCode;
-    //     response.status = booking.status;
-    //     response.email = booking.email;
-    //     response.firstName = booking.firstName;
-    //     response.lastName = booking.lastName;
-        
-    //     response.from = booking.checkInDate instanceof Date 
-    //         ? booking.checkInDate.toISOString().split('T')[0] 
-    //         : booking.checkInDate;
-            
-    //     response.to = booking.checkOutDate instanceof Date 
-    //         ? booking.checkOutDate.toISOString().split('T')[0] 
-    //         : booking.checkOutDate;
-
-    //     response.howMany = booking.guests;
-    //     response.totalPrice = booking.totalPrice;
-    //     response.createdAt = booking.createdAt.toISOString();
-    //     response.stornoDate = booking.stornoDate ? new Date(booking.stornoDate).toISOString() : null;
-
-    //     if (rooms) {
-    //         response.rooms = rooms.map(r => ({
-    //             id: r.id,
-    //             name: r.name,
-    //             pricePerNight: r.pricePerNight,
-    //             hotel: {
-    //                 id: r.hotel.id,
-    //                 title: r.hotel.title,
-    //                 city: r.hotel.city
-    //             }
-    //         }));
-    //     } else if (booking.positions) {
-    //         response.rooms = booking.positions.map(p => ({
-    //             id: p.roomId,
-    //             name: p.room?.name,
-    //             pricePerNight: p.pricePerNight,
-    //             hotel: {
-    //                 id: booking.hotel?.id,
-    //                 title: booking.hotel?.title,
-    //                 city: booking.hotel?.city
-    //             }
-    //         }));
-    //     }
-
-    //     return response;
-    // }
+    const response = new ResponseBookingDto();
+    response.id = booking.buchungs_id;
+    response.bookingCode = booking.buchungs_id.toString();
+    response.status = (booking.stornodatum ? 'CANCELLED' : 'CONFIRMED') as any;
+    response.email = booking.kunde?.benutzer?.email || '';
+    response.firstName = booking.kunde?.benutzer?.vorname || '';
+    response.lastName = booking.kunde?.benutzer?.nachname || '';
+    response.from = checkinDate.toISOString().split('T')[0];
+    response.to = checkoutDate.toISOString().split('T')[0];
+    response.howMany = booking.anzahl_gaeste;
+    response.createdAt = booking.zahlungsdatum ? new Date(booking.zahlungsdatum).toISOString() : new Date().toISOString();
+    response.stornoDate = booking.stornodatum ? new Date(booking.stornodatum).toISOString() : null;
+    
+    response.rooms = rooms.map(r => ({
+      id: r.zimmer_id,
+      name: r.bezeichnung,
+      pricePerNight: Number(r.basispreis),
+      hotel: { 
+        id: r.hotel?.hotel_id, 
+        title: r.hotel?.name, // Wieder 'name' statt 'titel'
+        city: r.hotel?.ort 
+      }
+    }));
+    
+    response.totalPrice = parseFloat(rooms.reduce((sum, r) => sum + (Number(r.basispreis) * nights), 0).toFixed(2));
+    
+    return response;
+  }
 }
