@@ -20,15 +20,20 @@ export const useLogin = () => {
 
       if (response.ok) {
         const data = await response.json();
-        login(data.accessToken, data.user.role);
+        
+        const userRole = data.user.role.toLowerCase(); 
+        
+        login(data.accessToken, userRole);
         toast.success("Erfolgreich angemeldet!");
 
-        if (data.user.role === 'admin') {
+        if (userRole === 'admin') {
           navigate('/admin/dashboard');
-        } else if (data.user.role === 'hotel_owner') {
+        } else if (userRole === 'hotelbesitzer' || userRole === 'hotel_owner') {
           navigate('/owner/dashboard');
+        } else if (userRole === 'kunde' || userRole === 'user') {
+          navigate('/');
         } else {
-          toast.error("Unbekannte Benutzerrolle.");
+          toast.error(`Unbekannte Rolle vom Server: ${data.user.role}`);
         }
       } else {
         const errData = await response.json();

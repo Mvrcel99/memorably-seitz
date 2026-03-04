@@ -17,10 +17,10 @@ export const useOwnerDashboard = () => {
     if (path.startsWith('http')) return path;
     
     let cleanPath = path.replace(/\\/g, '/');
-    if (cleanPath.startsWith('/api/')) {
-        cleanPath = cleanPath.replace('/api/', '/');
-    }
-    return cleanPath.startsWith('/') ? `${API_BASE_URL}${cleanPath}` : `${API_BASE_URL}/${cleanPath}`;
+    if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
+    
+    const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
+    return `${baseUrl}${cleanPath}`;
   };
 
   useEffect(() => {
@@ -52,20 +52,47 @@ export const useOwnerDashboard = () => {
         if (hotelsRes.ok && bookingsRes.ok) {
           const hotelsData = await hotelsRes.json();
           const bookingsData = await bookingsRes.json();
-          setBookings(bookingsData);
+          setBookings(Array.isArray(bookingsData) ? bookingsData : []);
 
           const detailedHotels = await Promise.all(
             hotelsData.map(async (h: any) => {
-              if (h.slug) {
+              let rawRooms = h.zimmer || h.rooms || [];
+
+              if (rawRooms.length === 0 && h.slug) {
                 try {
                   const detailRes = await fetch(`${API_BASE_URL}/hotels/${h.slug}`);
                   if (detailRes.ok) {
                     const detailData = await detailRes.json();
-                    return { ...h, rooms: detailData?.rooms || [] };
+                    rawRooms = detailData?.zimmer || detailData?.rooms || [];
                   }
                 } catch (e) { console.error(e); }
               }
-              return { ...h, rooms: [] };
+
+              const mappedRooms = rawRooms.map((r: any) => {
+                  const rawImages = r.zimmer_bild || r.zimmer_bilder || r.zimmerBilder || r.bilder || r.images || [];
+                  const mappedImages = rawImages.map((img: any) => ({
+                      id: img.zimmer_bild_id || img.id,
+                      url: img.pfad || img.url
+                  }));
+
+                  return {
+                     id: r.zimmer_id || r.id,
+                     name: r.bezeichnung || r.name,
+                     roomNumber: r.zimmernr_hotel || r.roomNumber,
+                     maxGuests: r.max_anzahl || r.maxGuests,
+                     pricePerNight: r.basispreis || r.pricePerNight,
+                     images: mappedImages
+                  };
+              });
+
+              return {
+                ...h,
+                id: h.hotel_id || h.id,
+                title: h.name || h.title,
+                city: h.ort || h.city,
+                country: h.land || h.country,
+                rooms: mappedRooms
+              };
             })
           );
 
@@ -102,7 +129,7 @@ export const useOwnerDashboard = () => {
                           headers: headers
                       });
                   } catch (err) {
-                      console.error("Fehler beim Löschen des Bildes (ignoriert):", err);
+                      console.error("Fehler beim Löschen des Bildes:", err);
                   }
               }
           }));
