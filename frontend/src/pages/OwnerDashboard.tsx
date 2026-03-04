@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Bed, Star, Plus, Hotel, MapPin,
-  ExternalLink, Trash2, Loader2, Image as ImageIcon
+  ExternalLink, Trash2, Pencil, Loader2, Image as ImageIcon
 } from "lucide-react";
 
 const OwnerDashboard = () => {
@@ -139,6 +139,14 @@ const OwnerDashboard = () => {
                                         </div>
 
                                         <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                                onClick={() => navigate('/owner/rooms/edit', { state: { room, hotelId: hotel.id || hotel.hotelId } })}
+                                            >
+                                                <Pencil size={18} />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

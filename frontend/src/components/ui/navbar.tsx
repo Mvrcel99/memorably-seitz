@@ -16,17 +16,20 @@ export const Navbar = () => {
   const isSearchPage = location.pathname === '/search';
   const isOnDashboard = location.pathname.includes('dashboard');
   
-  const isAlwaysBluePage = [
+  const alwaysBluePaths = [
     '/impressum', 
     '/ueber-uns', 
     '/login', 
     '/admin/dashboard', 
     '/owner/dashboard',
     '/owner/rooms/create',
+    '/owner/rooms/edit',
     '/admin/hotels/create',
     '/admin/hotels/edit',
     '/bookings' 
-  ].some(path => location.pathname.includes(path));
+  ];
+
+  const isAlwaysBluePage = alwaysBluePaths.some(path => location.pathname.includes(path));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,8 +48,11 @@ export const Navbar = () => {
   };
 
   const handleDashboardClick = () => {
-    if (userRole === 'admin') navigate('/admin/dashboard');
-    else if (userRole === 'hotel_owner') navigate('/owner/dashboard');
+    if (userRole === 'admin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/owner/dashboard');
+    }
   };
 
   const showLoggedInState = isLoggedIn && !isHome && !isLoginPage;
@@ -59,8 +65,7 @@ export const Navbar = () => {
         className="cursor-pointer transition-transform active:scale-95"
         onClick={() => navigate('/')}
       >
-        
-     <img src="/img/logo.png" alt="Memorably Logo" className="h-10 w-auto" />
+        <img src="/img/logo.png" alt="Memorably Logo" className="h-10 w-auto" />
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">

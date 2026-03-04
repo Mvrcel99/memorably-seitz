@@ -78,6 +78,7 @@ export const useOwnerDashboard = () => {
                   return {
                      id: r.zimmer_id || r.id,
                      name: r.bezeichnung || r.name,
+                     description: r.beschreibung || r.description, 
                      roomNumber: r.zimmernr_hotel || r.roomNumber,
                      maxGuests: r.max_anzahl || r.maxGuests,
                      pricePerNight: r.basispreis || r.pricePerNight,

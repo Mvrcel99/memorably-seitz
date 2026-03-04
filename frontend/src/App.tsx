@@ -1,27 +1,25 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Toaster } from "@/components/ui/sonner";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import Home from './pages/Home'; // <-- Das hier ist deine echte Startseite!
 import Login from './pages/Login';
-import Home from './pages/Home';
-import Impressum from './pages/Impressum';
-import UeberUns from './pages/UeberUns';
 import OwnerDashboard from './pages/OwnerDashboard';
-import CreateRoom from './pages/CreateRoom'; // <-- Neu importiert
+import CreateRoom from './pages/CreateRoom';
+import EditRoom from './pages/EditRoom';
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
-           <Route path="/" element={<Home />} />
-           <Route path="/login" element={<Login />} />
-           <Route path="/impressum" element={<Impressum />} />
-           <Route path="/ueber-uns" element={<UeberUns />} />
-           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
-           <Route path="/owner/rooms/create" element={<CreateRoom />} /> {/* <-- Neue Route */}
+          {/* Hier ist der Fix: Jetzt landest du wieder auf Home! */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/owner/dashboard" element={<OwnerDashboard />} />
+          <Route path="/owner/rooms/create" element={<CreateRoom />} />
+          <Route path="/owner/rooms/edit" element={<EditRoom />} />
         </Routes>
-        <Toaster />
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
 }
