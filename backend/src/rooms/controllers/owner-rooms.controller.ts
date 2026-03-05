@@ -24,7 +24,6 @@ export class OwnerRoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  
   @CheckAbilities({ action: Action.Create, subject: Zimmer }) 
   async createRoom(
     @Param('hotelId') hotelId: string,

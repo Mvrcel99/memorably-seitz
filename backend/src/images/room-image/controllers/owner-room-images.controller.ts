@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UploadedFile, UseGuards, UseInterceptors, Patch, Delete, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Param, Post, UploadedFile, UseGuards, UseInterceptors, Patch, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { RoomImagesService } from '../services/room-images.service';
 import { AuthGuard } from '../../../_common/auth/auth.guard';
 import { AbilitiesGuard } from '../../../_common/guard/abilities.guard';
@@ -13,7 +13,7 @@ import { ZimmerBild } from '../entities/room-image.entity';
 import { UpdateRoomImageDto } from '../dto/update-room-image.dto';
 
 @Controller({
-    path: 'owner/hotels/:hotelId/rooms/:roomId/images', 
+    path: 'owner/rooms/:roomId/images', 
     version: '1'
 })
 @UseGuards(AuthGuard, AbilitiesGuard)
@@ -26,13 +26,17 @@ export class OwnerRoomImagesController {
     @CheckAbilities({ action: Action.Create, subject: ZimmerBild }) 
     @UseInterceptors(FileInterceptor('image', multerOptions('room', 'roomId')))
     async uploadRoomImage(
-        @Param('hotelId', ParseIntPipe) hotelId: number,
-        @Param('roomId', ParseIntPipe) roomId: number,
+        @Param('hotelId') hotelId: number,
+        @Param('roomId') roomId: number,
         @UploadedFile() file: Express.Multer.File,
         @Body() createRoomImageDto: CreateRoomImageDto,
         @CurrentUser() user: AuthenticatedUser
     ) {
      
+        if (!file) {
+        throw new BadRequestException('Datei fehlt! Bitte stelle sicher, dass der Key in Postman "image" heißt und eine Datei ausgewählt ist.');
+        }
+
         const pfad = `/images/${file.filename}`;
         
         
