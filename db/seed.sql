@@ -60,10 +60,10 @@ VALUES
 -- -------------------------
 INSERT INTO hotel_bild (hotel_id, pfad, alt_text)
 VALUES
-(1, '/images/hotel_alpha_aussen.jpg', 'Außenansicht Hotel Alpha'),
-(1, '/images/hotel_alpha_lobby.jpg', 'Lobby Hotel Alpha'),
-(2, '/images/bergblick_aussen.jpg', 'Außenansicht Bergblick Lodge'),
-(2, '/images/bergblick_spa.jpg', 'Wellnessbereich Bergblick Lodge');
+(1, '/images/hotel/hotel_alpha_aussen.jpg', 'Außenansicht Hotel Alpha'),
+(1, '/images/hotel/hotel_alpha_lobby.jpg', 'Lobby Hotel Alpha'),
+(2, '/images/hotel/bergblick_aussen.jpg', 'Außenansicht Bergblick Lodge'),
+(2, '/images/hotel/bergblick_spa.jpg', 'Wellnessbereich Bergblick Lodge');
 
 -- -------------------------
 -- Hotel Ausstattung (m:n)
@@ -98,12 +98,12 @@ VALUES
 -- -------------------------
 INSERT INTO zimmer_bild (zimmer_id, pfad, alt_text)
 VALUES
-(1, '/images/alpha_101.jpg', 'Hotel Alpha Zimmer 101'),
-(2, '/images/alpha_201.jpg', 'Hotel Alpha Zimmer 201'),
-(3, '/images/alpha_301.jpg', 'Hotel Alpha Suite 301'),
-(4, '/images/bergblick_10.jpg', 'Bergblick Lodge Zimmer 10'),
-(5, '/images/bergblick_20.jpg', 'Bergblick Lodge Zimmer 20'),
-(6, '/images/bergblick_30.jpg', 'Bergblick Lodge Suite 30');
+(1, '/images/room/alpha_101.jpg', 'Hotel Alpha Zimmer 101'),
+(2, '/images/room/alpha_201.jpg', 'Hotel Alpha Zimmer 201'),
+(3, '/images/room/alpha_301.jpg', 'Hotel Alpha Suite 301'),
+(4, '/images/room/bergblick_10.jpg', 'Bergblick Lodge Zimmer 10'),
+(5, '/images/room/bergblick_20.jpg', 'Bergblick Lodge Zimmer 20'),
+(6, '/images/room/bergblick_30.jpg', 'Bergblick Lodge Suite 30');
 
 -- =========================================
 -- Buchungen (mehrere, realistische Streuung)
