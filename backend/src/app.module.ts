@@ -33,7 +33,7 @@ import { join } from 'path';
     CaslModule,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads', 
+      serveRoot: '/images', 
     })
   ],
   controllers: [AppController],
