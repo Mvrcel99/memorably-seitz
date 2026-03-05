@@ -28,9 +28,6 @@ export const useEditRoom = () => {
     if (path.startsWith('http')) return path;
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
-    if (cleanPath.startsWith('/images/')) {
-        cleanPath = cleanPath.replace('/images/', '/uploads/');
-    }
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
     return `${baseUrl}${cleanPath}`;
   };
@@ -44,7 +41,6 @@ export const useEditRoom = () => {
 
     const { room, hotelId } = location.state;
     
-    // Wir loggen das Zimmer, um zu sehen, wie die IDs WIRKLICH heißen!
     console.log("KOMPLETTES ZIMMER VOM BACKEND:", room);
 
     const extractedRoomId = room.id || room.zimmer_id || room.zimmerId;
@@ -96,7 +92,6 @@ export const useEditRoom = () => {
     
     const token = localStorage.getItem('accessToken');
     try {
-      // HIER IST DIE NEUE ROUTE AUS DEINER EXCEL!
       const deleteUrl = `${API_BASE_URL}/owner/hotels/${hotelId}/rooms/${roomId}/images/${imageId}`;
       console.log("Sende DELETE an:", deleteUrl);
 
@@ -131,7 +126,6 @@ export const useEditRoom = () => {
       let guestsInt = parseInt(formData.maxGuests, 10);
       if (isNaN(guestsInt)) guestsInt = 1;
 
-      // 1. Zimmer-Daten aktualisieren
       const updateRes = await fetch(`${API_BASE_URL}/owner/hotels/${hotelId}/rooms/${roomId}`, {
         method: 'PATCH',
         headers: {
@@ -152,7 +146,6 @@ export const useEditRoom = () => {
         throw new Error(`Fehler beim Speichern der Zimmerdaten: ${err}`);
       }
 
-      // 2. Neue Bilder hochladen
       if (selectedFiles.length > 0) {
         const startSortOrder = existingImages.length; 
 
@@ -183,8 +176,6 @@ export const useEditRoom = () => {
                formDataUpload.append('alt', webpFile.name); 
                formDataUpload.append('sortOrder', String(startSortOrder + index)); 
 
-               // Evtl. muss der Upload auch an die Hotel-Route angepasst werden, 
-               // wir versuchen es erst mal mit der bekannten Route
                const uploadUrl = `${API_BASE_URL}/owner/rooms/${roomId}/images`;
                console.log("Lade Bild hoch an:", uploadUrl);
 

@@ -19,10 +19,6 @@ export const useOwnerDashboard = () => {
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
     
-    if (cleanPath.startsWith('/images/')) {
-        cleanPath = cleanPath.replace('/images/', '/uploads/');
-    }
-    
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
     return `${baseUrl}${cleanPath}`;
   };
