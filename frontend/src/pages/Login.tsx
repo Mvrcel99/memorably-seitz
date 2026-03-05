@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useLogin } from '../hooks/useLogin';
+import { Navbar } from "@/components/ui/navbar";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ const Login = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-white font-sans flex flex-col">
+      <Navbar />
       <main className="flex-grow flex items-center justify-center pt-20 px-6">
         <div className="w-full max-w-md space-y-8 bg-slate-50 p-10 rounded-[32px] border border-slate-100 shadow-sm">
           <div className="text-center">
