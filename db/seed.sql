@@ -49,11 +49,11 @@ VALUES
 -- -------------------------
 INSERT INTO hotel (
   besitzer_id, name, beschreibung, hotelsterne, land, strasse, plz, ort,
-  stornogebuehr_prozent, kostenlos_stornierbar_bis_stunden
+  stornogebuehr_prozent, kostenlos_stornierbar_bis_stunden, slug, latitude, longitude
 )
 VALUES
-(5, 'Hotel Alpha', 'Modernes Businesshotel mit zentraler Lage', 4, 'DE', 'Hotelweg 10', '89518', 'Heidenheim', 20, 24),
-(6, 'Bergblick Lodge', 'Gemütliches Hotel nahe der Berge', 3, 'DE', 'Alpenstr. 7', '87629', 'Füssen', 30, 48);
+(5, 'Hotel Alpha', 'Modernes Businesshotel mit zentraler Lage', 4, 'DE', 'Hotelweg 10', '89518', 'Heidenheim', 20, 24, 'hotel-alpha', 48.67659, 10.15282),
+(6, 'Bergblick Lodge', 'Gemütliches Hotel nahe der Berge', 3, 'DE', 'Alpenstr. 7', '87629', 'Füssen', 30, 48, 'bergblick-lodge', 47.57135, 10.70165);
 
 -- -------------------------
 -- Hotel Bilder
