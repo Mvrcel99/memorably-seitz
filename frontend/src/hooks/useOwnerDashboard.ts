@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../lib/api';
@@ -19,99 +19,110 @@ export const useOwnerDashboard = () => {
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
     
+    if (cleanPath.startsWith('/uploads/')) {
+        cleanPath = cleanPath.replace('/uploads/', '/images/');
+    }
+    
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
     return `${baseUrl}${cleanPath}`;
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        logout();
-        navigate('/login');
-        return;
-      }
+  const fetchData = useCallback(async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      logout();
+      navigate('/login');
+      return;
+    }
 
-      try {
-        const hotelsRes = await fetch(`${API_BASE_URL}/owner/hotels`, {
+    try {
+      const hotelsRes = await fetch(`${API_BASE_URL}/owner/hotels`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      const bookingsRes = await fetch(`${API_BASE_URL}/owner/bookings`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
           }
         });
 
-        const bookingsRes = await fetch(`${API_BASE_URL}/owner/bookings`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+      if (hotelsRes.status === 401 || bookingsRes.status === 401) throw new Error("Unauthorized");
+
+      if (hotelsRes.ok && bookingsRes.ok) {
+        const hotelsData = await hotelsRes.json();
+        const bookingsData = await bookingsRes.json();
+        setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+
+        const detailedHotels = await Promise.all(
+          hotelsData.map(async (h: any) => {
+            let rawRooms = h.zimmer || h.rooms || [];
+
+            if (rawRooms.length === 0 && h.slug) {
+              try {
+                const detailRes = await fetch(`${API_BASE_URL}/hotels/${h.slug}`);
+                if (detailRes.ok) {
+                  const detailData = await detailRes.json();
+                  rawRooms = detailData?.zimmer || detailData?.rooms || [];
+                }
+              } catch (e) {}
             }
-          });
 
-        if (hotelsRes.status === 401 || bookingsRes.status === 401) throw new Error("Unauthorized");
+            const mappedRooms = rawRooms.map((r: any) => {
+                const rawImages = r.zimmer_bild || r.zimmer_bilder || r.zimmerBilder || r.bilder || r.images || [];
+                const mappedImages = rawImages.map((img: any) => {
+                    const imgId = img.id || img.zimmer_bild_id || img.bild_id || img.imageId || img.zimmerBildId || img.bildId || img._id;
+                    
+                    console.log("Geladenes Bild im Dashboard:", img, "Erkannte ID:", imgId);
+                    
+                    return {
+                        id: imgId,
+                        url: img.pfad || img.url || img.path || img.image_url
+                    };
+                });
 
-        if (hotelsRes.ok && bookingsRes.ok) {
-          const hotelsData = await hotelsRes.json();
-          const bookingsData = await bookingsRes.json();
-          setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+                return {
+                   id: r.zimmer_id || r.id,
+                   name: r.bezeichnung || r.name,
+                   description: r.beschreibung || r.description, 
+                   roomNumber: r.zimmernr_hotel || r.roomNumber,
+                   maxGuests: r.max_anzahl || r.maxGuests,
+                   pricePerNight: r.basispreis || r.pricePerNight,
+                   images: mappedImages
+                };
+            });
 
-          const detailedHotels = await Promise.all(
-            hotelsData.map(async (h: any) => {
-              let rawRooms = h.zimmer || h.rooms || [];
+            return {
+              ...h,
+              id: h.hotel_id || h.id,
+              title: h.name || h.title,
+              city: h.ort || h.city,
+              country: h.land || h.country,
+              rooms: mappedRooms
+            };
+          })
+        );
 
-              if (rawRooms.length === 0 && h.slug) {
-                try {
-                  const detailRes = await fetch(`${API_BASE_URL}/hotels/${h.slug}`);
-                  if (detailRes.ok) {
-                    const detailData = await detailRes.json();
-                    rawRooms = detailData?.zimmer || detailData?.rooms || [];
-                  }
-                } catch (e) { console.error(e); }
-              }
-
-              const mappedRooms = rawRooms.map((r: any) => {
-                  const rawImages = r.zimmer_bild || r.zimmer_bilder || r.zimmerBilder || r.bilder || r.images || [];
-                  const mappedImages = rawImages.map((img: any) => ({
-                      id: img.zimmer_bild_id || img.id,
-                      url: img.pfad || img.url
-                  }));
-
-                  return {
-                     id: r.zimmer_id || r.id,
-                     name: r.bezeichnung || r.name,
-                     description: r.beschreibung || r.description, 
-                     roomNumber: r.zimmernr_hotel || r.roomNumber,
-                     maxGuests: r.max_anzahl || r.maxGuests,
-                     pricePerNight: r.basispreis || r.pricePerNight,
-                     images: mappedImages
-                  };
-              });
-
-              return {
-                ...h,
-                id: h.hotel_id || h.id,
-                title: h.name || h.title,
-                city: h.ort || h.city,
-                country: h.land || h.country,
-                rooms: mappedRooms
-              };
-            })
-          );
-
-          setHotels(detailedHotels);
-        }
-
-      } catch (error) {
-        console.error(error);
-        logout();
-        navigate('/login');
-        toast.error("Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.");
-      } finally {
-        setLoading(false);
+        setHotels(detailedHotels);
       }
-    };
 
-    fetchData();
+    } catch (error) {
+      logout();
+      navigate('/login');
+      toast.error("Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich erneut ein.");
+    } finally {
+      setLoading(false);
+    }
   }, [navigate, logout]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteRoom = async (room: any, hotelId: string) => {
     if (!window.confirm(`Möchten Sie das Zimmer "${room.name}" wirklich unwiderruflich löschen?`)) return;
@@ -125,13 +136,11 @@ export const useOwnerDashboard = () => {
           await Promise.all(room.images.map(async (img: any) => {
               if (img.id) { 
                   try {
-                      await fetch(`${API_BASE_URL}/owner/rooms/room-images/${img.id}`, {
+                      await fetch(`${API_BASE_URL}/owner/hotels/${hotelId}/rooms/${room.id}/images/${img.id}`, {
                           method: 'DELETE',
                           headers: headers
                       });
-                  } catch (err) {
-                      console.error("Fehler beim Löschen des Bildes:", err);
-                  }
+                  } catch (err) {}
               }
           }));
       }
@@ -167,6 +176,7 @@ export const useOwnerDashboard = () => {
     deletingRoomId,
     getImageUrl,
     handleDeleteRoom,
-    navigate
+    navigate,
+    fetchData
   };
 };

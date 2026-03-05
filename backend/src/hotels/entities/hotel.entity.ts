@@ -20,7 +20,10 @@ export class Hotel {
   besitzer_id: number;
 
   @Column()
-  name: string; // Wichtig: Heißt 'titel', nicht 'name'
+  name: string;
+
+  @Column()
+  slug: string;
 
   @Column('text')
   beschreibung: string;
@@ -40,7 +43,6 @@ export class Hotel {
   @Column()
   ort: string;
 
-  // Diese beiden Spalten haben gefehlt:
   @Column('decimal', { precision: 10, scale: 8, nullable: true })
   latitude: number;
 

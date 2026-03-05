@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS hotel (
   ort VARCHAR NOT NULL,
   stornogebuehr_prozent INT NOT NULL,
   kostenlos_stornierbar_bis_stunden INT NOT NULL,
+  latitude NUMERIC(10,8),
+  longitude NUMERIC(11,8),
+  slug VARCHAR NOT NULL UNIQUE,
 
   CONSTRAINT chk_hotelsterne CHECK (hotelsterne BETWEEN 1 AND 5),
   CONSTRAINT chk_storno_prozent CHECK (stornogebuehr_prozent BETWEEN 0 AND 100),

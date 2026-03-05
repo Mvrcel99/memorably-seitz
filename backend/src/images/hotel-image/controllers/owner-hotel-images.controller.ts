@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UploadedFile, UseGuards, UseInterceptors, Patch, Delete,ParseIntPipe,Req
+import { Body, Controller, Param, Post, UploadedFile, UseGuards, UseInterceptors, Patch, Delete,ParseIntPipe,Req, BadRequestException
 } from '@nestjs/common';
 import { AuthGuard } from '../../../_common/auth/auth.guard';
 import { AbilitiesGuard } from '../../../_common/guard/abilities.guard';
@@ -33,7 +33,8 @@ export class OwnerHotelImagesController {
         @Body() createHotelImageDto: CreateHotelImageDto,
         @CurrentUser() user: AuthenticatedUser
     ) {
-        
+         if (!file) throw new BadRequestException('Kein Bild hochgeladen oder falsches Format');
+
         const pfad = `/images/${file.filename}`;
         
         

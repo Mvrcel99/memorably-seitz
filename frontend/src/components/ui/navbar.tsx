@@ -24,7 +24,7 @@ export const Navbar = () => {
     '/owner/dashboard',
     '/owner/rooms/create',
     '/owner/rooms/edit',
-    '/owner/hotels/edit', // <-- HIER IST DER FIX FÜR DIE BLAUE NAVBAR!
+    '/owner/hotels/edit',
     '/admin/hotels/create',
     '/admin/hotels/edit',
     '/bookings' 
@@ -57,11 +57,7 @@ export const Navbar = () => {
   };
 
   const handleLogoClick = () => {
-    if (isLoggedIn) {
-      handleDashboardClick();
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   const showLoggedInState = isLoggedIn && !isHome && !isLoginPage;
