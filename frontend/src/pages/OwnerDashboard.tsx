@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Bed, Star, Plus, Hotel, MapPin,
-  ExternalLink, Trash2, Pencil, Loader2, Image as ImageIcon,
+  Trash2, Pencil, Loader2, Image as ImageIcon,
   Calendar, User, CreditCard
 } from "lucide-react";
 
@@ -89,7 +89,6 @@ const OwnerDashboard = () => {
                                   <Hotel size={24} />
                                </div>
                                <div>
-                                  {/* HIER IST DER NEUE BEARBEITEN BUTTON FÜRS HOTEL */}
                                   <div className="flex items-center gap-2">
                                     <h3 className="font-bold text-slate-900 text-xl">{hotel.title}</h3>
                                     <Button 
@@ -107,12 +106,6 @@ const OwnerDashboard = () => {
                                   </div>
                                </div>
                             </div>
-
-                            {hotel.slug && (
-                              <Button variant="outline" size="sm" onClick={() => navigate(`/hotels/${hotel.slug}`)}>
-                                <ExternalLink size={14} className="mr-2"/> Öffentliche Vorschau
-                              </Button>
-                            )}
                          </div>
 
                          <div className="p-6 bg-white">
