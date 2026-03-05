@@ -12,12 +12,31 @@ export const useOwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
 
-  const getImageUrl = (path: string) => {
+  // const getImageUrl = (path: string) => {
+  //   if (!path) return "";
+  //   if (path.startsWith('http')) return path;
+    
+  //   let cleanPath = path.replace(/\\/g, '/');
+  //   if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
+    
+  //   if (cleanPath.startsWith('/images/')) {
+  //       cleanPath = cleanPath.replace('/images/', '/uploads/');
+  //   }
+    
+  //   const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
+  //   return `${baseUrl}${cleanPath}`;
+  // };
+
+    const getImageUrl = (path: string) => {
     if (!path) return "";
     if (path.startsWith('http')) return path;
-    
+
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
+    
+    if (cleanPath.startsWith('/images/')) {
+        cleanPath = cleanPath.replace('/images/', '/uploads/');
+    }
     
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
     return `${baseUrl}${cleanPath}`;
