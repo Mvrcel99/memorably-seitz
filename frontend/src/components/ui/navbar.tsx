@@ -21,12 +21,14 @@ export const Navbar = () => {
     '/ueber-uns', 
     '/login', 
     '/admin/dashboard', 
+    '/admin/hotels/create',
+    '/admin/hotels/edit',
+    '/admin/ausstattung/create',
+    '/admin/ausstattung/edit',
     '/owner/dashboard',
     '/owner/rooms/create',
     '/owner/rooms/edit',
     '/owner/hotels/edit',
-    '/admin/hotels/create',
-    '/admin/hotels/edit',
     '/bookings' 
   ];
 
