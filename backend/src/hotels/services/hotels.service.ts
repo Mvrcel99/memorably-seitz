@@ -32,7 +32,6 @@ export class HotelsService {
       strasse: 'Bitte ergänzen', 
       plz: '00000',
       stornogebuehr_prozent: 100
-      // latitude/longitude entfernt, da sie in deiner DB fehlen
     });
 
     const savedHotel = await this.hotelRepo.save(newHotel);
@@ -122,7 +121,7 @@ export class HotelsService {
   async getHotelsByOwner(ownerId: number): Promise<HotelResponseDto[]> {
     const hotels = await this.hotelRepo.find({
       where: { besitzer_id: ownerId },
-      relations: ['zimmer', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
+      relations: ['zimmer', 'zimmer.bilder', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
     });
     return hotels.map(hotel => this.mapToResponseDto(hotel));
   }
