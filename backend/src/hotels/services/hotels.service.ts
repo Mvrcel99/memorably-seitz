@@ -22,7 +22,7 @@ export class HotelsService {
 
   async createHotel(user: AuthenticatedUser, dto: CreateHotelDto): Promise<HotelResponseDto> {
     const newHotel = this.hotelRepo.create({
-      name: dto.title, // Nutzt die existierende DB-Spalte 'name'
+      name: dto.title,
       beschreibung: dto.description,
       ort: dto.city,
       land: dto.country,
@@ -32,7 +32,6 @@ export class HotelsService {
       strasse: 'Bitte ergänzen', 
       plz: '00000',
       stornogebuehr_prozent: 100
-      // latitude/longitude entfernt, da sie in deiner DB fehlen
     });
 
     const savedHotel = await this.hotelRepo.save(newHotel);
@@ -52,7 +51,7 @@ export class HotelsService {
       const { featureIds, ...basicData } = dto;
 
       await manager.update(Hotel, hotel_id, {
-        name: basicData.title, // 'name' statt 'titel'
+        name: basicData.title,
         beschreibung: basicData.description,
         ort: basicData.city,
         land: basicData.country,
@@ -112,7 +111,7 @@ export class HotelsService {
   async getHotelBySlug(slug: string): Promise<HotelResponseDto> {
     const formattedName = slug.replace(/-/g, ' ');
     const hotel = await this.hotelRepo.findOne({
-      where: { name: ILike(formattedName) }, // DB-Spalte 'name'
+      where: { name: ILike(formattedName) },
       relations: ['zimmer', 'zimmer.bilder', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
     });
     if (!hotel) throw new NotFoundException(`Hotel "${formattedName}" nicht gefunden.`);
@@ -122,7 +121,7 @@ export class HotelsService {
   async getHotelsByOwner(ownerId: number): Promise<HotelResponseDto[]> {
     const hotels = await this.hotelRepo.find({
       where: { besitzer_id: ownerId },
-      relations: ['zimmer', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
+      relations: ['zimmer', 'zimmer.bilder', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
     });
     return hotels.map(hotel => this.mapToResponseDto(hotel));
   }
@@ -139,7 +138,7 @@ export class HotelsService {
   public mapToListItemDto(hotel: Hotel, startingPrice?: number): HotelListItemDto {
     return {
       hotelId: hotel.hotel_id,
-      title: hotel.name, // Mapping auf DTO-Feld 'title'
+      title: hotel.name,
       city: hotel.ort,
       stars: hotel.hotelsterne,
       minPricePerNight: startingPrice ?? (hotel.zimmer?.[0]?.basispreis || 0),
@@ -153,7 +152,7 @@ export class HotelsService {
   public mapToResponseDto(hotel: Hotel): HotelResponseDto {
     return {
       id: hotel.hotel_id.toString(),
-      title: hotel.name, // Mapping auf DTO-Feld 'title'
+      title: hotel.name,
       slug: hotel.name.toLowerCase().replace(/\s+/g, '-'),
       description: hotel.beschreibung,
       city: hotel.ort,
@@ -165,12 +164,13 @@ export class HotelsService {
         beschreibung: (ha.ausstattung as any)?.beschreibung || ''
       })) || [],
       images: hotel.bilder?.map(img => ({
-        id: (img as any).bild_id,
+        id: (img as any).hotel_bild_id || (img as any).id, 
         url: img.pfad,
         alt: hotel.name,
         sortOrder: 0
       })) || [],
       rooms: hotel.zimmer?.map(z => ({
+        id: z.zimmer_id.toString(),
         zimmer_id: z.zimmer_id,
         zimmernr_hotel: (z as any).zimmernr_hotel || 0,
         bezeichnung: z.bezeichnung,
@@ -181,7 +181,7 @@ export class HotelsService {
         max_anzahl: (z as any).max_anzahl || (z as any).max_gaeste || 2,
         ist_verfügbar: true,
         bilder: z.bilder?.map(img => ({
-          id: (img as any).bild_id,
+          id: img.zimmer_bild_id,
           url: img.pfad,
           alt: z.bezeichnung,
           sortOrder: 0
