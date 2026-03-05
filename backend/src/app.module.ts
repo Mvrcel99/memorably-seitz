@@ -11,6 +11,8 @@ import { RoomImageModule } from './images/room-image/room-image.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './_common/auth/auth.module';
 import { CaslModule } from './_common/casl/casl.module';
+import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -29,10 +31,10 @@ import { CaslModule } from './_common/casl/casl.module';
     UsersModule,
     AuthModule,
     CaslModule,
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(process.cwd(), 'uploads'),
-    //   serveRoot: '/uploads', 
-    // })
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads', 
+    })
   ],
   controllers: [AppController],
   providers: [AppService],
