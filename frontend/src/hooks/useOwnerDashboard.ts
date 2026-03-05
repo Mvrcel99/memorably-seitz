@@ -12,30 +12,15 @@ export const useOwnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
 
-  // const getImageUrl = (path: string) => {
-  //   if (!path) return "";
-  //   if (path.startsWith('http')) return path;
-    
-  //   let cleanPath = path.replace(/\\/g, '/');
-  //   if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
-    
-  //   if (cleanPath.startsWith('/images/')) {
-  //       cleanPath = cleanPath.replace('/images/', '/uploads/');
-  //   }
-    
-  //   const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
-  //   return `${baseUrl}${cleanPath}`;
-  // };
-
-    const getImageUrl = (path: string) => {
+  const getImageUrl = (path: string) => {
     if (!path) return "";
     if (path.startsWith('http')) return path;
-
+    
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
     
-    if (cleanPath.startsWith('/images/')) {
-        cleanPath = cleanPath.replace('/images/', '/uploads/');
+    if (cleanPath.startsWith('/uploads/')) {
+        cleanPath = cleanPath.replace('/uploads/', '/images/');
     }
     
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
@@ -90,10 +75,16 @@ export const useOwnerDashboard = () => {
 
             const mappedRooms = rawRooms.map((r: any) => {
                 const rawImages = r.zimmer_bild || r.zimmer_bilder || r.zimmerBilder || r.bilder || r.images || [];
-                const mappedImages = rawImages.map((img: any) => ({
-                    id: img.zimmer_bild_id || img.id,
-                    url: img.pfad || img.url
-                }));
+                const mappedImages = rawImages.map((img: any) => {
+                    const imgId = img.id || img.zimmer_bild_id || img.bild_id || img.imageId || img.zimmerBildId || img.bildId || img._id;
+                    
+                    console.log("Geladenes Bild im Dashboard:", img, "Erkannte ID:", imgId);
+                    
+                    return {
+                        id: imgId,
+                        url: img.pfad || img.url || img.path || img.image_url
+                    };
+                });
 
                 return {
                    id: r.zimmer_id || r.id,

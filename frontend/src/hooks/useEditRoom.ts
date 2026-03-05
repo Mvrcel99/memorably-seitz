@@ -26,8 +26,14 @@ export const useEditRoom = () => {
   const getImageUrl = (path: string) => {
     if (!path) return "";
     if (path.startsWith('http')) return path;
+    
     let cleanPath = path.replace(/\\/g, '/');
     if (!cleanPath.startsWith('/')) cleanPath = '/' + cleanPath;
+    
+    if (cleanPath.startsWith('/uploads/')) {
+        cleanPath = cleanPath.replace('/uploads/', '/images/');
+    }
+    
     const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
     return `${baseUrl}${cleanPath}`;
   };
@@ -40,8 +46,6 @@ export const useEditRoom = () => {
     }
 
     const { room, hotelId } = location.state;
-    
-    console.log("KOMPLETTES ZIMMER VOM BACKEND:", room);
 
     const extractedRoomId = room.id || room.zimmer_id || room.zimmerId;
     setHotelId(hotelId);
@@ -83,22 +87,24 @@ export const useEditRoom = () => {
   };
 
   const handleDeleteExistingImage = async (imageId: string) => {
+    console.log("Klick auf den Mülleimer! Bild-ID ist:", imageId);
+
     if (!imageId || imageId === "undefined") {
       toast.error("Fehler: Bild-ID fehlt. Bitte in die F12 Konsole schauen!");
       return;
     }
 
-    if (!window.confirm("Möchten Sie dieses Bild wirklich löschen?")) return;
-    
     const token = localStorage.getItem('accessToken');
     try {
-      const deleteUrl = `${API_BASE_URL}/owner/hotels/${hotelId}/rooms/${roomId}/images/${imageId}`;
-      console.log("Sende DELETE an:", deleteUrl);
+      const deleteUrl = `${API_BASE_URL}/owner/rooms/${roomId}/images/${imageId}`;
+      console.log("Sende jetzt DELETE-Anfrage an:", deleteUrl);
 
       const res = await fetch(deleteUrl, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      console.log("Antwort vom Backend erhalten. Status:", res.status);
 
       if (!res.ok) {
         const errText = await res.text();
@@ -108,7 +114,7 @@ export const useEditRoom = () => {
       setExistingImages(prev => prev.filter(img => img.id !== imageId));
       toast.success("Bild erfolgreich gelöscht.");
     } catch (error: any) {
-      console.error("Löschen fehlgeschlagen:", error);
+      console.error("Fehler im Catch-Block:", error);
       toast.error(error.message || "Das Bild konnte nicht gelöscht werden.");
     }
   };
@@ -177,7 +183,6 @@ export const useEditRoom = () => {
                formDataUpload.append('sortOrder', String(startSortOrder + index)); 
 
                const uploadUrl = `${API_BASE_URL}/owner/rooms/${roomId}/images`;
-               console.log("Lade Bild hoch an:", uploadUrl);
 
                const imgRes = await fetch(uploadUrl, {
                    method: 'POST',
@@ -187,12 +192,9 @@ export const useEditRoom = () => {
                
                if (!imgRes.ok) {
                  const uploadErr = await imgRes.text();
-                 console.error("Upload Fehler Details:", uploadErr);
                  toast.error(`Bild-Upload fehlgeschlagen: ${uploadErr}`);
                }
-            } catch (imgErr) {
-                console.error("Fehler bei Bildverarbeitung", imgErr);
-            }
+            } catch (imgErr) {}
         }));
       }
 
@@ -200,7 +202,6 @@ export const useEditRoom = () => {
       navigate('/owner/dashboard');
 
     } catch (error: any) {
-      console.error("Submit Error:", error);
       toast.error(`Fehler: ${error.message}`);
     } finally {
       setLoading(false);
