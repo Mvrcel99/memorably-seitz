@@ -111,11 +111,40 @@ export const useCreateRoom = () => {
       const newRoomId = newRoom.data?.zimmer_id || newRoom.zimmer_id || newRoom.id;
 
       if (selectedFiles.length > 0 && newRoomId) {
-         await Promise.all(selectedFiles.map(async (file) => {
+         // HIER DIE ÄNDERUNG: Wir geben der map-Funktion den "index" mit!
+         await Promise.all(selectedFiles.map(async (file, index) => {
              try {
+                const webpFile = await new Promise<File>((resolve, reject) => {
+                    if (file.type === 'image/webp') {
+                        resolve(file);
+                        return;
+                    }
+                    const img = new Image();
+                    img.src = URL.createObjectURL(file);
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx?.drawImage(img, 0, 0);
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                                resolve(new File([blob], newFileName, { type: 'image/webp' }));
+                            } else {
+                                reject(new Error("Bildkonvertierung fehlgeschlagen"));
+                            }
+                        }, 'image/webp', 0.85);
+                    };
+                    img.onerror = () => reject(new Error("Fehler beim Laden des Bildes zur Konvertierung."));
+                });
+
                 const formDataUpload = new FormData();
-                formDataUpload.append('file', file);
-                formDataUpload.append('alt_text', file.name);
+                formDataUpload.append('image', webpFile);
+                
+                // HIER DIE MAGIE: Wir befriedigen die DTO-Validierung vom Backend!
+                formDataUpload.append('alt', webpFile.name); 
+                formDataUpload.append('sortOrder', String(index)); // 0 fürs erste Bild, 1 fürs zweite...
 
                 const imgRes = await fetch(`${API_BASE_URL}/owner/rooms/${newRoomId}/images`, {
                     method: 'POST',
@@ -129,7 +158,8 @@ export const useCreateRoom = () => {
                     console.error("Upload Fehler:", errText);
                 }
              } catch (imgErr) {
-                 toast.error("Netzwerkfehler beim Bild-Upload.");
+                 toast.error("Fehler bei der Bildverarbeitung.");
+                 console.error(imgErr);
              }
          }));
       }
