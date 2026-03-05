@@ -19,7 +19,6 @@ const OwnerDashboard = () => {
     navigate
   } = useOwnerDashboard();
 
-  // Hilfsfunktion, um das Datum schön auf Deutsch zu formatieren
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString('de-DE', {
@@ -33,7 +32,6 @@ const OwnerDashboard = () => {
       <main className="flex-grow pt-32 px-6 pb-12">
         <div className="max-w-7xl mx-auto space-y-8">
 
-          {/* HEADLINE & BUTTON */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-blue-600 mb-2">
@@ -51,7 +49,6 @@ const OwnerDashboard = () => {
             </Button>
           </div>
 
-          {/* STATS KARTEN */}
           <div className="grid gap-6 sm:grid-cols-2">
             <Card className="border-none shadow-sm bg-white">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -76,8 +73,6 @@ const OwnerDashboard = () => {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            
-            {/* LINKE SEITE: HOTELS & ZIMMER (nimmt 2/3 des Platzes ein) */}
             <div className="lg:col-span-2 space-y-6">
                <h2 className="text-xl font-bold text-slate-900 ml-1">Meine Hotels & Zimmer</h2>
 
@@ -94,7 +89,18 @@ const OwnerDashboard = () => {
                                   <Hotel size={24} />
                                </div>
                                <div>
-                                  <h3 className="font-bold text-slate-900 text-xl">{hotel.title}</h3>
+                                  {/* HIER IST DER NEUE BEARBEITEN BUTTON FÜRS HOTEL */}
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-bold text-slate-900 text-xl">{hotel.title}</h3>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                      onClick={() => navigate('/owner/hotels/edit', { state: { hotel } })}
+                                    >
+                                      <Pencil size={14} />
+                                    </Button>
+                                  </div>
                                   <div className="flex items-center text-slate-500 text-sm font-medium mt-1">
                                      <MapPin size={14} className="mr-1" />
                                      {hotel.city}, {hotel.country}
@@ -188,7 +194,6 @@ const OwnerDashboard = () => {
                )}
             </div>
 
-            {/* RECHTE SEITE: BUCHUNGEN (nimmt 1/3 des Platzes ein) */}
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-900 ml-1">Letzte Buchungen</h2>
               
@@ -207,7 +212,6 @@ const OwnerDashboard = () => {
                               {booking.firstName} {booking.lastName}
                             </span>
                           </div>
-                          {/* Status Badge */}
                           {booking.status === 'CONFIRMED' ? (
                             <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase">
                               Bestätigt

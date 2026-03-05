@@ -24,6 +24,7 @@ export const Navbar = () => {
     '/owner/dashboard',
     '/owner/rooms/create',
     '/owner/rooms/edit',
+    '/owner/hotels/edit', // <-- HIER IST DER FIX FÜR DIE BLAUE NAVBAR!
     '/admin/hotels/create',
     '/admin/hotels/edit',
     '/bookings' 
@@ -55,6 +56,14 @@ export const Navbar = () => {
     }
   };
 
+  const handleLogoClick = () => {
+    if (isLoggedIn) {
+      handleDashboardClick();
+    } else {
+      navigate('/');
+    }
+  };
+
   const showLoggedInState = isLoggedIn && !isHome && !isLoginPage;
 
   return (
@@ -63,7 +72,7 @@ export const Navbar = () => {
     }`}>
       <div 
         className="cursor-pointer transition-transform active:scale-95"
-        onClick={() => navigate('/')}
+        onClick={handleLogoClick}
       >
         <img src="/img/logo.png" alt="Memorably Logo" className="h-10 w-auto" />
       </div>
