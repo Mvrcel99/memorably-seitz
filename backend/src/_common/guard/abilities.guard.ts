@@ -17,7 +17,7 @@ export class AbilitiesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     const ability = this.caslAbilityFactory.createForUser(user);
 
-    // Überprüfe alle Regeln - kompakter onhe try catch wie in der AI Doku, da die fehlermeldung von Nestjs automatisch generiert wird tr
+
     return rules.every((rule) => ability.can(rule.action, rule.subject));
   
   }

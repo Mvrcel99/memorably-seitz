@@ -22,7 +22,7 @@ export class Hotel {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ nullable: true }) 
   slug: string;
 
   @Column('text')
