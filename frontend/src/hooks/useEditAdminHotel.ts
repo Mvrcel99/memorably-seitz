@@ -14,7 +14,7 @@ export const useEditAdminHotel = () => {
     description: "",
     city: "",
     country: "",
-    stars: "0"
+    stars: "1" // Sterne starten bei 1 (Backend-Regel)
   });
 
   useEffect(() => {
@@ -25,40 +25,55 @@ export const useEditAdminHotel = () => {
     }
 
     const { hotel } = location.state;
-    setHotelId(hotel.id || hotel.hotel_id || hotel._id);
+    console.log("Zu bearbeitendes Hotel geladen:", hotel);
+    
+    // Fängt alle möglichen ID-Namen aus dem Backend ab
+    const extractedId = hotel.id || hotel.hotel_id || hotel._id || hotel.hotelId;
+    setHotelId(extractedId);
 
     setFormData({
       title: hotel.title || hotel.name || "",
       description: hotel.description || hotel.beschreibung || "",
       city: hotel.city || hotel.ort || "",
       country: hotel.country || hotel.land || "",
-      stars: hotel.stars || hotel.hotelsterne ? String(hotel.stars || hotel.hotelsterne) : "0"
+      stars: hotel.stars || hotel.hotelsterne ? String(hotel.stars || hotel.hotelsterne) : "1"
     });
   }, [location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Verhindert, dass die Seite neu lädt
+    console.log("Button geklickt! Formular wird verarbeitet...");
+    
+    if (!hotelId) {
+        toast.error("Fehler: Konnte die Hotel-ID nicht finden.");
+        return;
+    }
+
     setLoading(true);
     const token = localStorage.getItem('accessToken');
 
     try {
-      if (!hotelId) throw new Error("Hotel ID fehlt.");
-
       const starsInt = parseInt(formData.stars, 10);
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        city: formData.city,
+        country: formData.country,
+        stars: isNaN(starsInt) ? 1 : starsInt
+      };
+
+      console.log("Sende Daten an Backend:", payload);
+
       const response = await fetch(`${API_BASE_URL}/admin/hotels/${hotelId}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          city: formData.city,
-          country: formData.country,
-          stars: isNaN(starsInt) ? 0 : starsInt
-        })
+        body: JSON.stringify(payload)
       });
+
+      console.log("Backend Antwort Status:", response.status);
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
@@ -71,6 +86,7 @@ export const useEditAdminHotel = () => {
       toast.success("Hotel erfolgreich aktualisiert!");
       navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error("Fehler beim Fetch:", error);
       toast.error(`Fehler: ${error.message}`);
     } finally {
       setLoading(false);

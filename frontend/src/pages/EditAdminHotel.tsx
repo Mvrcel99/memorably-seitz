@@ -23,9 +23,10 @@ const EditAdminHotel = () => {
 
         <Card className="border border-slate-200 shadow-xl bg-white rounded-2xl overflow-hidden">
             <CardContent className="p-8">
+                {/* Hier ist der Form-Tag, der den submit auslöst */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <Label>Hotelname</Label>
+                        <Label>Hotelname (Title)</Label>
                         <div className="relative">
                             <Building className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                             <Input 
@@ -71,15 +72,15 @@ const EditAdminHotel = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Sterne (0-5)</Label>
+                        <Label>Sterne (1-5)</Label>
                         <div className="relative">
                             <Star className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                             <Input 
                                 type="number" 
-                                min="0"
+                                min="1"
                                 max="5"
                                 required 
-                                className="pl-9"
+                                className="pl-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 value={formData.stars}
                                 onChange={e => setFormData({...formData, stars: e.target.value})}
                             />
@@ -88,7 +89,7 @@ const EditAdminHotel = () => {
 
                     <Button 
                         type="submit" 
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-lg font-bold shadow-md shadow-indigo-200" 
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 text-lg font-bold shadow-md shadow-indigo-200 mt-6" 
                         disabled={loading}
                     >
                         {loading ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> Speichere...</> : <><Pencil className="mr-2 h-5 w-5"/> Änderungen speichern</>}
