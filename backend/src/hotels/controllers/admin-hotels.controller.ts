@@ -19,6 +19,7 @@ export class AdminHotelsController {
     constructor(
         private readonly hotelService: HotelsService,
     ) {}
+    
 
     @Post()
     @CheckAbilities({ action: Action.Create, subject: Hotel })
