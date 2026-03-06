@@ -61,15 +61,21 @@ export class HotelsService {
         updateData.name = basicData.title;
         updateData.slug = basicData.title.toLowerCase().replace(/\s+/g, '-');
       }
-      if (basicData.description !== undefined) updateData.beschreibung = basicData.description;
+      
+      // Das entscheidende Mapping für 'description' -> 'beschreibung'
+      if (basicData.description !== undefined) {
+        updateData.beschreibung = basicData.description;
+      }
+
       if (basicData.city !== undefined) updateData.ort = basicData.city;
       if (basicData.country !== undefined) updateData.land = basicData.country;
       if (basicData.stars !== undefined) updateData.hotelsterne = basicData.stars;
+      if (basicData.latitude !== undefined) updateData.latitude = basicData.latitude;
+      if (basicData.longitude !== undefined) updateData.longitude = basicData.longitude;
+      
       if (basicData.free_Cancellation_Until_Hours_Before_CheckIn !== undefined) {
         updateData.kostenlos_stornierbar_bis_stunden = basicData.free_Cancellation_Until_Hours_Before_CheckIn;
       }
-      if (basicData.latitude !== undefined) updateData.latitude = basicData.latitude;
-      if (basicData.longitude !== undefined) updateData.longitude = basicData.longitude;
 
       if (Object.keys(updateData).length > 0) {
         await manager.update(Hotel, hotel_id, updateData);
