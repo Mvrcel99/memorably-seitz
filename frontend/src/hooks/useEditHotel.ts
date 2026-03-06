@@ -20,6 +20,10 @@ export const useEditHotel = () => {
   const [existingImages, setExistingImages] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  
+  // NEUE STATES FÜR FEATURES
+  const [allFeatures, setAllFeatures] = useState<any[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
 
   const getImageUrl = (path: string) => {
     if (!path) return "";
@@ -54,6 +58,11 @@ export const useEditHotel = () => {
       stars: hotel.stars || hotel.hotelsterne ? String(hotel.stars || hotel.hotelsterne) : "0"
     });
 
+    // --- NEU: Gespeicherte Features setzen ---
+    if (hotel.featureIds && Array.isArray(hotel.featureIds)) {
+        setSelectedFeatures(hotel.featureIds);
+    }
+
     const rawImages = hotel.bilder || hotel.images || hotel.hotel_bilder || [];
     if (Array.isArray(rawImages)) {
       const safeImages = rawImages.map((img: any) => {
@@ -66,6 +75,24 @@ export const useEditHotel = () => {
       });
       setExistingImages(safeImages);
     }
+
+    // --- NEU: Alle verfügbaren Features vom Backend laden ---
+    const fetchFeatures = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${API_BASE_URL}/admin/ausstattung`, { 
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setAllFeatures(data);
+            }
+        } catch (error) {
+            console.error("Fehler beim Laden der Features", error);
+        }
+    };
+    fetchFeatures();
+
   }, [location, navigate]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,6 +136,15 @@ export const useEditHotel = () => {
     }
   };
 
+  // --- NEU: Toggle-Funktion für Checkboxen ---
+  const handleFeatureToggle = (featureId: number, isChecked: boolean) => {
+      if (isChecked) {
+          setSelectedFeatures(prev => [...prev, featureId]);
+      } else {
+          setSelectedFeatures(prev => prev.filter(id => id !== featureId));
+      }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -130,7 +166,8 @@ export const useEditHotel = () => {
           description: formData.description,
           city: formData.city,
           country: formData.country,
-          stars: isNaN(starsInt) ? 0 : starsInt
+          stars: isNaN(starsInt) ? 0 : starsInt,
+          featureIds: selectedFeatures // <--- HIER WERDEN DIE FEATURES MITGESCHICKT
         })
       });
 
@@ -209,6 +246,9 @@ export const useEditHotel = () => {
     handleDeleteExistingImage,
     handleSubmit,
     getImageUrl,
-    navigate
+    navigate,
+    allFeatures,         // <--- NEU
+    selectedFeatures,    // <--- NEU
+    handleFeatureToggle  // <--- NEU
   };
 };

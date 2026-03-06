@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Star, MapPin, Building, Upload, Trash2, X, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Star, MapPin, Building, Upload, Trash2, X, Image as ImageIcon, Settings } from "lucide-react";
 
 const EditHotel = () => {
   const {
@@ -19,7 +19,10 @@ const EditHotel = () => {
     handleDeleteExistingImage,
     handleSubmit,
     getImageUrl,
-    navigate
+    navigate,
+    allFeatures,
+    selectedFeatures,
+    handleFeatureToggle
   } = useEditHotel();
 
   return (
@@ -97,6 +100,35 @@ const EditHotel = () => {
                                 onChange={e => setFormData({...formData, stars: e.target.value})}
                             />
                         </div>
+                    </div>
+
+                    {/* NEU: Features / Ausstattung */}
+                    <div className="pt-6 border-t border-slate-200 mt-6 space-y-4">
+                        <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                            <Settings className="mr-2 h-5 w-5 text-blue-600" />
+                            Ausstattung (Features)
+                        </h3>
+                        {allFeatures && allFeatures.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {allFeatures.map((feature: any) => {
+                                    const fId = feature.id || feature.ausstattung_id || feature._id;
+                                    const fName = feature.titel || feature.name || feature.bezeichnung;
+                                    return (
+                                        <Label key={fId} className="flex items-center space-x-3 cursor-pointer p-4 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-blue-200 transition-all">
+                                            <input 
+                                                type="checkbox" 
+                                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                checked={selectedFeatures.includes(fId)}
+                                                onChange={(e) => handleFeatureToggle(fId, e.target.checked)}
+                                            />
+                                            <span className="text-sm font-medium text-slate-700">{fName}</span>
+                                        </Label>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-slate-500 italic">Lade Features oder keine verfügbar...</p>
+                        )}
                     </div>
 
                     {/* Bilder-Bereich (Hotel) */}
