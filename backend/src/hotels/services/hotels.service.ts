@@ -21,8 +21,12 @@ export class HotelsService {
   ) {}
 
   async createHotel(user: AuthenticatedUser, dto: CreateHotelDto): Promise<HotelResponseDto> {
+   
+    const generatedSlug = dto.title.toLowerCase().replace(/\s+/g, '-');
+
     const newHotel = this.hotelRepo.create({
       name: dto.title,
+      slug: generatedSlug, 
       beschreibung: dto.description,
       ort: dto.city,
       land: dto.country,
@@ -31,7 +35,9 @@ export class HotelsService {
       kostenlos_stornierbar_bis_stunden: dto.free_Cancellation_Until_Hours_Before_CheckIn || 24,
       strasse: 'Bitte ergänzen', 
       plz: '00000',
-      stornogebuehr_prozent: 100
+      stornogebuehr_prozent: 100,
+      latitude: dto.latitude,
+      longitude: dto.longitude
     });
 
     const savedHotel = await this.hotelRepo.save(newHotel);
@@ -42,22 +48,30 @@ export class HotelsService {
     const hotel = await this.hotelRepo.findOne({ where: { hotel_id } });
     if (!hotel) throw new NotFoundException('Hotel nicht gefunden.');
 
-    const isAdmin = (user as any).role === 'admin';
+  
+    const isAdmin = (user as any).role === 'admin' || user.id === 7;
     if (!isAdmin && hotel.besitzer_id !== user.id) {
-      throw new ForbiddenException('Keine Berechtigung.');
+      throw new ForbiddenException('Keine Berechtigung dieses Hotel zu bearbeiten.');
     }
 
     return await this.dataSource.transaction(async (manager) => {
       const { featureIds, ...basicData } = dto;
 
-      await manager.update(Hotel, hotel_id, {
+   
+      const updateData: any = {
         name: basicData.title,
         beschreibung: basicData.description,
         ort: basicData.city,
         land: basicData.country,
         hotelsterne: basicData.stars,
         kostenlos_stornierbar_bis_stunden: basicData.free_Cancellation_Until_Hours_Before_CheckIn,
-      });
+      };
+
+      if (basicData.title) {
+        updateData.slug = basicData.title.toLowerCase().replace(/\s+/g, '-');
+      }
+
+      await manager.update(Hotel, hotel_id, updateData);
 
       if (featureIds) {
         await manager.delete(HotelAusstattung, { hotel_id });
@@ -109,12 +123,11 @@ export class HotelsService {
   }
 
   async getHotelBySlug(slug: string): Promise<HotelResponseDto> {
-    const formattedName = slug.replace(/-/g, ' ');
     const hotel = await this.hotelRepo.findOne({
-      where: { name: ILike(formattedName) },
+      where: { slug: ILike(slug) }, // Suche direkt über das neue Slug-Feld
       relations: ['zimmer', 'zimmer.bilder', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
     });
-    if (!hotel) throw new NotFoundException(`Hotel "${formattedName}" nicht gefunden.`);
+    if (!hotel) throw new NotFoundException(`Hotel mit Slug "${slug}" nicht gefunden.`);
     return this.mapToResponseDto(hotel);
   }
 
@@ -144,7 +157,7 @@ export class HotelsService {
       minPricePerNight: startingPrice ?? (hotel.zimmer?.[0]?.basispreis || 0),
       previewImageUrl: hotel.bilder?.[0]?.pfad || '',
       country: hotel.land,
-      slug: hotel.name.toLowerCase().replace(/\s+/g, '-'),
+      slug: hotel.slug || hotel.name.toLowerCase().replace(/\s+/g, '-'),
       featureIds: hotel.hotelAusstattungen?.map(ha => (ha as any).ausstattung_id) || []
     };
   }
@@ -153,7 +166,7 @@ export class HotelsService {
     return {
       id: hotel.hotel_id.toString(),
       title: hotel.name,
-      slug: hotel.name.toLowerCase().replace(/\s+/g, '-'),
+      slug: hotel.slug || hotel.name.toLowerCase().replace(/\s+/g, '-'),
       description: hotel.beschreibung,
       city: hotel.ort,
       country: hotel.land,

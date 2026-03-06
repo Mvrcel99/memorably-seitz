@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Post, UseGuards, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Patch, Post, UseGuards, Param, ParseIntPipe, Get } from '@nestjs/common';
 import { AuthGuard } from '../../_common/auth/auth.guard';
 import type { AuthenticatedUser } from '../../_common/casl/casl.utils';
 import { HotelsService } from '../../hotels/services/hotels.service';
@@ -19,7 +19,12 @@ export class AdminHotelsController {
     constructor(
         private readonly hotelService: HotelsService,
     ) {}
-    
+    @Get()
+    @CheckAbilities({ action: Action.Read, subject: Hotel })
+    async findAllHotels() {
+   
+        return this.hotelService.searchHotels({}); 
+    }
 
     @Post()
     @CheckAbilities({ action: Action.Create, subject: Hotel })
