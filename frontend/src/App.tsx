@@ -9,6 +9,8 @@ import EditHotel from './pages/EditHotel';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateFeature from './pages/CreateFeature';
 import EditFeature from './pages/EditFeature';
+import CreateAdminHotel from './pages/CreateAdminHotel';
+import EditAdminHotel from './pages/EditAdminHotel';
 
 function App() {
   return (
@@ -17,13 +19,17 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          
           <Route path="/owner/hotels/edit" element={<EditHotel />} />
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
           <Route path="/owner/rooms/create" element={<CreateRoom />} />
           <Route path="/owner/rooms/edit" element={<EditRoom />} />
+          
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/ausstattung/create" element={<CreateFeature />} />
           <Route path="/admin/ausstattung/edit" element={<EditFeature />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/hotels/create" element={<CreateAdminHotel />} />
+          <Route path="/admin/hotels/edit" element={<EditAdminHotel />} />
         </Routes>
       </Router>
     </AuthProvider>
