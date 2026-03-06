@@ -21,7 +21,6 @@ export class HotelsService {
   ) {}
 
   async createHotel(user: AuthenticatedUser, dto: CreateHotelDto): Promise<HotelResponseDto> {
-   
     const generatedSlug = dto.title.toLowerCase().replace(/\s+/g, '-');
 
     const newHotel = this.hotelRepo.create({
@@ -48,7 +47,6 @@ export class HotelsService {
     const hotel = await this.hotelRepo.findOne({ where: { hotel_id } });
     if (!hotel) throw new NotFoundException('Hotel nicht gefunden.');
 
-  
     const isAdmin = (user as any).role === 'admin' || user.id === 7;
     if (!isAdmin && hotel.besitzer_id !== user.id) {
       throw new ForbiddenException('Keine Berechtigung dieses Hotel zu bearbeiten.');
@@ -57,21 +55,25 @@ export class HotelsService {
     return await this.dataSource.transaction(async (manager) => {
       const { featureIds, ...basicData } = dto;
 
-   
-      const updateData: any = {
-        name: basicData.title,
-        beschreibung: basicData.description,
-        ort: basicData.city,
-        land: basicData.country,
-        hotelsterne: basicData.stars,
-        kostenlos_stornierbar_bis_stunden: basicData.free_Cancellation_Until_Hours_Before_CheckIn,
-      };
-
-      if (basicData.title) {
+      const updateData: any = {};
+      
+      if (basicData.title !== undefined) {
+        updateData.name = basicData.title;
         updateData.slug = basicData.title.toLowerCase().replace(/\s+/g, '-');
       }
+      if (basicData.description !== undefined) updateData.beschreibung = basicData.description;
+      if (basicData.city !== undefined) updateData.ort = basicData.city;
+      if (basicData.country !== undefined) updateData.land = basicData.country;
+      if (basicData.stars !== undefined) updateData.hotelsterne = basicData.stars;
+      if (basicData.free_Cancellation_Until_Hours_Before_CheckIn !== undefined) {
+        updateData.kostenlos_stornierbar_bis_stunden = basicData.free_Cancellation_Until_Hours_Before_CheckIn;
+      }
+      if (basicData.latitude !== undefined) updateData.latitude = basicData.latitude;
+      if (basicData.longitude !== undefined) updateData.longitude = basicData.longitude;
 
-      await manager.update(Hotel, hotel_id, updateData);
+      if (Object.keys(updateData).length > 0) {
+        await manager.update(Hotel, hotel_id, updateData);
+      }
 
       if (featureIds) {
         await manager.delete(HotelAusstattung, { hotel_id });
@@ -124,7 +126,7 @@ export class HotelsService {
 
   async getHotelBySlug(slug: string): Promise<HotelResponseDto> {
     const hotel = await this.hotelRepo.findOne({
-      where: { slug: ILike(slug) }, // Suche direkt über das neue Slug-Feld
+      where: { slug: ILike(slug) }, 
       relations: ['zimmer', 'zimmer.bilder', 'bilder', 'hotelAusstattungen', 'hotelAusstattungen.ausstattung']
     });
     if (!hotel) throw new NotFoundException(`Hotel mit Slug "${slug}" nicht gefunden.`);
