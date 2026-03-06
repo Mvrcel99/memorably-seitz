@@ -1,12 +1,12 @@
 export class HotelListItemDto {
-    hotelId: number; 
-    title: string;
-    city: string;
-    stars: number;
-    previewImageUrl: string;
-    minPricePerNight: number;
-    
-    country?: string;
-    slug?: string;
-    featureIds?: number[];
+  hotelId: number;
+  title: string;
+  description: string; 
+  city: string;
+  stars: number;
+  minPricePerNight: number;
+  previewImageUrl: string;
+  country: string;
+  slug: string;
+  featureIds: number[];
 }

@@ -160,6 +160,7 @@ export class HotelsService {
     return {
       hotelId: hotel.hotel_id,
       title: hotel.name,
+      description: hotel.beschreibung,
       city: hotel.ort,
       stars: hotel.hotelsterne,
       minPricePerNight: startingPrice ?? (hotel.zimmer?.[0]?.basispreis || 0),
