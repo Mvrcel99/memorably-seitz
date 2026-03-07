@@ -58,9 +58,12 @@ export const useEditHotel = () => {
       stars: hotel.stars || hotel.hotelsterne ? String(hotel.stars || hotel.hotelsterne) : "0"
     });
 
-    // --- NEU: Gespeicherte Features setzen ---
-    if (hotel.featureIds && Array.isArray(hotel.featureIds)) {
-        setSelectedFeatures(hotel.featureIds);
+    const features = hotel.features || hotel.featureIds || [];
+    if (Array.isArray(features) && features.length > 0) {
+        const ids = features.map((f: any) => 
+            typeof f === 'number' ? f : (f.ausstattung_id || f.id)
+        );
+        setSelectedFeatures(ids);
     }
 
     const rawImages = hotel.bilder || hotel.images || hotel.hotel_bilder || [];
