@@ -12,11 +12,12 @@ import { CaslModule } from '../_common/casl/casl.module';
 import { HotelAusstattung } from '../features/entities/feature-hotel.entity';
 import { Ausstattung } from '../features/entities/feature.entity';
 import { BookingsModule } from '../bookings/bookings.module';
+import { Buchung } from '../bookings/entities/booking.entity';
 
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Hotel, HotelAusstattung, Ausstattung]), CaslModule, BookingsModule],
+  imports: [TypeOrmModule.forFeature([Hotel, HotelAusstattung, Ausstattung, Buchung]), CaslModule, BookingsModule],
   controllers: [HotelsController, OwnerHotelsController, AdminHotelsController],
   providers: [HotelsService]
 

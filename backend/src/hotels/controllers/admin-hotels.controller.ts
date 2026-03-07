@@ -44,4 +44,16 @@ export class AdminHotelsController {
     ) {
         return this.hotelService.updateHotel(user, hotelId, updateHotelDto);
     }
+
+    @Patch(':id/status')
+    @CheckAbilities({ action: Action.Update, subject: Hotel })
+    async setHotelStatus(
+        @Param('id', ParseIntPipe) hotelId: number,
+        @Body() body: { status: 'active' | 'deactivated' },
+        @CurrentUser() user: AuthenticatedUser
+    ) {
+        return this.hotelService.setHotelStatus(user, hotelId, body.status);
+    }
+
+
 }

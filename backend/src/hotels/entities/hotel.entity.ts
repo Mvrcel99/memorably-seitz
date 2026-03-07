@@ -25,6 +25,9 @@ export class Hotel {
   @Column({ nullable: true }) 
   slug: string;
 
+  @Column({ default: 'active' })
+  status: string;
+
   @Column('text')
   beschreibung: string;
 

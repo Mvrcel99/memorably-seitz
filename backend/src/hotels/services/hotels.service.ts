@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, ILike } from 'typeorm';
 import { Hotel } from '../entities/hotel.entity';
@@ -10,6 +10,7 @@ import { UpdateHotelDto } from '../dto/update-hotel.dto';
 import { HotelResponseDto } from '../dto/hotel-response.dto';
 import { AuthenticatedUser } from '../../_common/casl/casl.utils';
 import { HotelAusstattung } from '../../features/entities/feature-hotel.entity';
+import { Buchung } from '../../bookings/entities/booking.entity';
 
 @Injectable()
 export class HotelsService {
@@ -18,6 +19,8 @@ export class HotelsService {
     private readonly hotelRepo: Repository<Hotel>,
     private readonly availabilityService: BookingAvailabilityService,
     private readonly dataSource: DataSource,
+    @InjectRepository(Buchung)
+    private readonly buchungRepo: Repository<Buchung>
   ) {}
 
   async createHotel(user: AuthenticatedUser, dto: CreateHotelDto): Promise<HotelResponseDto> {
@@ -155,6 +158,31 @@ export class HotelsService {
     if (!hotel) throw new NotFoundException(`Hotel mit ID ${id} nicht gefunden.`);
     return hotel;
   }
+
+async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' | 'deactivated') {
+    const hotel = await this.hotelRepo.findOne({ where: { hotel_id: hotelId } });
+    if (!hotel) throw new NotFoundException(`Hotel ${hotelId} nicht gefunden`);
+
+    if (status === 'deactivated') {
+        const activeBuchungen = await this.buchungRepo
+            .createQueryBuilder('buchung')
+            .innerJoin('buchung.buchungZimmer', 'bz')
+            .innerJoin('bz.zimmer', 'zimmer')
+            .where('zimmer.hotel_id = :hotelId', { hotelId })
+            .andWhere('buchung.checkout > CURRENT_DATE')
+            .andWhere('buchung.stornodatum IS NULL')
+            .getCount();
+
+        if (activeBuchungen > 0) {
+            throw new ConflictException(
+                `Hotel kann nicht deaktiviert werden: Es gibt noch ${activeBuchungen} aktive Buchung(en).`
+            );
+        }
+    }
+
+    hotel.status = status;
+    return this.hotelRepo.save(hotel);
+}
 
   public mapToListItemDto(hotel: Hotel, startingPrice?: number): HotelListItemDto {
     return {

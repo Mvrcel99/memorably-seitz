@@ -42,10 +42,12 @@ CREATE TABLE IF NOT EXISTS hotel (
   latitude NUMERIC(10,8),
   longitude NUMERIC(11,8),
   slug VARCHAR NOT NULL UNIQUE,
+  status VARCHAR NOT NULL DEFAULT 'active',
 
   CONSTRAINT chk_hotelsterne CHECK (hotelsterne BETWEEN 1 AND 5),
   CONSTRAINT chk_storno_prozent CHECK (stornogebuehr_prozent BETWEEN 0 AND 100),
-  CONSTRAINT chk_kostenlos_storno_stunden CHECK (kostenlos_stornierbar_bis_stunden >= 0)
+  CONSTRAINT chk_kostenlos_storno_stunden CHECK (kostenlos_stornierbar_bis_stunden >= 0),
+  CONSTRAINT chk_status CHECK (status IN ('active', 'deactivated'))
 );
 
 CREATE TABLE IF NOT EXISTS hotel_bild (
