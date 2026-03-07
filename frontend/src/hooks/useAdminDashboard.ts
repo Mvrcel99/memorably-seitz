@@ -11,6 +11,7 @@ export const useAdminDashboard = () => {
   const [features, setFeatures] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingFeatureId, setDeletingFeatureId] = useState<string | null>(null);
+  const [togglingHotelId, setTogglingHotelId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     const token = localStorage.getItem('accessToken');
@@ -91,12 +92,60 @@ export const useAdminDashboard = () => {
     }
   };
 
+  const handleToggleHotelStatus = async (hotel: any) => {
+    const hotelId = hotel.id || hotel.hotel_id || hotel._id || hotel.hotelId;
+    
+    if (!hotelId) {
+      toast.error("Fehler: Hotel-ID konnte nicht gefunden werden!");
+      return;
+    }
+
+    const isActive = hotel.status === 'inactiv' ? false : (hotel.status === 'activ' ? true : hotel.is_active !== false);
+    const newStatus = isActive ? 'inactiv' : 'activ'; 
+
+    setTogglingHotelId(hotelId);
+    const token = localStorage.getItem('accessToken');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/hotels/${hotelId}/status`, {
+        method: 'PATCH',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        toast.success(`Hotel erfolgreich ${isActive ? 'deaktiviert' : 'aktiviert'}.`);
+        
+        setHotels(currentHotels => currentHotels.map(h => {
+          const hId = h.id || h.hotel_id || h._id || h.hotelId;
+          if (hId === hotelId) {
+            return { ...h, status: newStatus };
+          }
+          return h;
+        }));
+
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || `Fehler beim ${isActive ? 'Deaktivieren' : 'Aktivieren'}`);
+      }
+    } catch (error: any) {
+      toast.error(`Fehler: ${error.message}`);
+    } finally {
+      setTogglingHotelId(null);
+    }
+  };
+
   return {
     hotels,
     features,
     loading,
     deletingFeatureId,
+    togglingHotelId,
     handleDeleteFeature,
+    handleToggleHotelStatus,
     navigate,
     fetchData
   };

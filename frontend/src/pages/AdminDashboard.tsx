@@ -3,7 +3,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  ShieldAlert, Building, Settings, Plus, Pencil, Trash2, Loader2, MapPin
+  ShieldAlert, Building, Settings, Plus, Pencil, Trash2, Loader2, MapPin, Power
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -12,7 +12,9 @@ const AdminDashboard = () => {
     features,
     loading,
     deletingFeatureId,
+    togglingHotelId,
     handleDeleteFeature,
+    handleToggleHotelStatus,
     navigate
   } = useAdminDashboard();
 
@@ -67,30 +69,51 @@ const AdminDashboard = () => {
                   <div className="text-center py-12 text-slate-400 animate-pulse">Lade Hotels...</div>
                ) : hotels.length > 0 ? (
                   <div className="grid gap-4">
-                    {hotels.map((hotel: any) => (
-                      <div key={hotel.id || hotel.hotel_id || hotel._id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:border-indigo-100 transition-colors">
+                    {hotels.map((hotel: any) => {
+                      const hotelId = hotel.id || hotel.hotel_id || hotel._id || hotel.hotelId;
+                      const isActive = hotel.status === 'inactiv' ? false : (hotel.status === 'activ' ? true : hotel.is_active !== false);
+                      
+                      return (
+                      <div key={hotelId} className={`bg-white p-5 rounded-2xl border ${isActive ? 'border-slate-100 hover:border-indigo-100' : 'border-red-100 bg-red-50/30'} shadow-sm flex items-center justify-between transition-colors`}>
                          <div className="flex items-center gap-4">
-                            <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <div className={`h-12 w-12 ${isActive ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'} rounded-xl flex items-center justify-center flex-shrink-0`}>
                                <Building size={20} />
                             </div>
                             <div>
-                               <h3 className="font-bold text-slate-900 text-base">{hotel.name || hotel.title}</h3>
+                               <div className="flex items-center gap-2">
+                                 <h3 className={`font-bold text-base ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{hotel.name || hotel.title}</h3>
+                                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                   {isActive ? 'Aktiv' : 'Inaktiv'}
+                                 </span>
+                               </div>
                                <div className="flex items-center text-slate-500 text-xs mt-1">
                                   <MapPin size={12} className="mr-1" />
                                   {hotel.ort || hotel.city}, {hotel.land || hotel.country}
                                </div>
                             </div>
                          </div>
-                         <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                            onClick={() => navigate('/admin/hotels/edit', { state: { hotel } })}
-                         >
-                            <Pencil size={18} />
-                         </Button>
+                         <div className="flex gap-1">
+                           <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              title={isActive ? "Hotel deaktivieren" : "Hotel aktivieren"}
+                              className={isActive ? "text-red-400 hover:text-red-600 hover:bg-red-50" : "text-green-500 hover:text-green-600 hover:bg-green-50"}
+                              onClick={() => handleToggleHotelStatus(hotel)}
+                              disabled={togglingHotelId === hotelId}
+                           >
+                              {togglingHotelId === hotelId ? <Loader2 size={18} className="animate-spin" /> : <Power size={18} />}
+                           </Button>
+                           <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                              onClick={() => navigate('/admin/hotels/edit', { state: { hotel } })}
+                           >
+                              <Pencil size={18} />
+                           </Button>
+                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                ) : (
                   <div className="text-center py-12 bg-white rounded-2xl border border-slate-100 text-slate-400">Keine Hotels im System.</div>
