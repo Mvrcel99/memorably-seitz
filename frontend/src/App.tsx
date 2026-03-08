@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { DisclaimerModal } from './components/ui/DisclaimerModal';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import OwnerDashboard from './pages/OwnerDashboard';
@@ -16,6 +17,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <DisclaimerModal />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
