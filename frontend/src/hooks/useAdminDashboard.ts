@@ -129,6 +129,11 @@ export const useAdminDashboard = () => {
 
       } else {
         const errData = await response.json().catch(() => ({}));
+        
+        if (response.status === 409) {
+          throw new Error(errData.message || "Deaktivieren nicht möglich: Es liegen noch aktive Buchungen vor.");
+        }
+        
         throw new Error(errData.message || `Fehler beim ${isActive ? 'Deaktivieren' : 'Aktivieren'}`);
       }
     } catch (error: any) {
