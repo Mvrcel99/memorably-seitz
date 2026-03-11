@@ -12,6 +12,7 @@ import CreateFeature from './pages/CreateFeature';
 import EditFeature from './pages/EditFeature';
 import CreateAdminHotel from './pages/CreateAdminHotel';
 import EditAdminHotel from './pages/EditAdminHotel';
+import Listview from './pages/Listview';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/search" element={<Listview />} />
           
           <Route path="/owner/hotels/edit" element={<EditHotel />} />
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
