@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, MoreThan, EntityManager } from 'typeorm';
+import { Repository, LessThan, MoreThan, EntityManager, IsNull } from 'typeorm'; 
 import { BuchungZimmer } from '../entities/booking-room.entity';
 import { Zimmer } from '../../rooms/entities/room.entity';
 
@@ -14,12 +14,12 @@ export class BookingAvailabilityService {
   ) {}
 
   async getAvailableRooms(hotel_id: number, from: Date, to: Date): Promise<Zimmer[]> {
-    // 1. Alle Zimmer des Hotels finden
+    
     const allRooms = await this.zimmerRepo.find({
       where: { hotel: { hotel_id: hotel_id } } as any
     });
 
-    // 2. Belegte Zimmer finden
+    
     const occupiedRoomItems = await this.buchungZimmerRepo.find({
       relations: ['buchung', 'zimmer', 'zimmer.hotel'],
       where: {
@@ -27,16 +27,16 @@ export class BookingAvailabilityService {
           hotel: { hotel_id: hotel_id } 
         } as any,
         buchung: {
-          // STATUS WURDE ENTFERNT, da Spalte in DB nicht existiert
           checkin: LessThan(to),
           checkout: MoreThan(from),
+          stornodatum: IsNull(), 
         } as any
       }
     });
 
     const occupiedRoomIds = occupiedRoomItems.map(item => item.zimmer_id);
 
-    // 3. Verfügbare Zimmer filtern
+    
     return allRooms.filter(room => !occupiedRoomIds.includes(room.zimmer_id));
   }
 
@@ -48,12 +48,13 @@ export class BookingAvailabilityService {
       where: {
         zimmer_id: zimmer_id,
         buchung: {
-          // STATUS WURDE ENTFERNT
           checkin: LessThan(to),
           checkout: MoreThan(from),
+          stornodatum: IsNull(), 
         } as any
       }
     });
+
 
     return count === 0;
   }

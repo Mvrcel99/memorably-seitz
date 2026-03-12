@@ -41,36 +41,56 @@ export class BookingsService {
     const checkOutDate = new Date(dto.to);
 
     return await this.dataSource.transaction(async (manager) => {
-      if (checkInDate >= checkOutDate) throw new BadRequestException('Check-out muss nach Check-in liegen.');
+      
+      if (checkInDate >= checkOutDate) {
+        throw new BadRequestException('Check-out muss nach dem Check-in liegen.');
+      }
 
+     
       const kunde = await manager.getRepository(Kunde).findOne({
         where: { benutzer: { email: dto.email } },
         relations: ['benutzer']
       });
 
-      if (!kunde) throw new NotFoundException(`Kunde mit E-Mail ${dto.email} nicht gefunden.`);
+      if (!kunde) {
+        throw new NotFoundException(`Kunde mit E-Mail ${dto.email} nicht gefunden.`);
+      }
 
+      
       const uniqueRoomIds = [...new Set(dto.roomIds)];
       const rooms = await this.roomRepo.find({
         where: { zimmer_id: In(uniqueRoomIds) },
         relations: ['hotel']
       });
 
-      if (rooms.length !== uniqueRoomIds.length) throw new NotFoundException('Zimmer nicht gefunden.');
-
-      for (const room of rooms) {
-        const isAvailable = await this.availabilityService.checkRoom(room.zimmer_id, checkInDate, checkOutDate, manager);
-        if (!isAvailable) throw new ConflictException(`Zimmer "${room.bezeichnung}" ist belegt.`);
+      if (rooms.length !== uniqueRoomIds.length) {
+        throw new NotFoundException('Eines oder mehrere Zimmer wurden nicht gefunden.');
       }
 
-      const nights = Math.max(1, Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
-      const totalPrice = rooms.reduce((sum, r) => sum + (Number(r.basispreis) * nights), 0);
+      
+      for (const room of rooms) {
+        const isAvailable = await this.availabilityService.checkRoom(
+            room.zimmer_id, 
+            checkInDate, 
+            checkOutDate, 
+            manager
+        );
+        
+        if (!isAvailable) {
+          throw new ConflictException(`Das Zimmer "${room.bezeichnung}" ist im gewählten Zeitraum bereits belegt.`);
+        }
+      }
 
+     
+      const nights = Math.max(1, Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+      const totalPricePerNight = rooms.reduce((sum, r) => sum + Number(r.basispreis), 0);
+
+      
       const booking = manager.create(Buchung, {
         checkin: checkInDate,
         checkout: checkOutDate,
         anzahl_gaeste: dto.howMany,
-        preis_pro_nacht: totalPrice / nights,
+        preis_pro_nacht: totalPricePerNight,
         zahlungsdatum: new Date(),
         kunde_id: kunde.benutzer_id,
         zahlungsmethode_id: 1
@@ -78,6 +98,7 @@ export class BookingsService {
 
       const savedBooking = await manager.save(booking);
 
+      
       const positions = rooms.map(room => manager.create(BuchungZimmer, {
         buchungs_id: savedBooking.buchungs_id,
         zimmer_id: room.zimmer_id,
@@ -86,6 +107,7 @@ export class BookingsService {
       }));
 
       await manager.save(positions);
+
       return this.mapToResponseDto(savedBooking, rooms);
     });
   }
@@ -113,7 +135,7 @@ export class BookingsService {
     });
 
     if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
-    if (booking.stornodatum) throw new BadRequestException('Bereits storniert.');
+    if (booking.stornodatum) throw new BadRequestException('Diese Buchung wurde bereits storniert.');
 
     booking.stornodatum = new Date();
     const saved = await this.bookingRepo.save(booking);
@@ -145,7 +167,7 @@ export class BookingsService {
         pricePerNight: parseFloat(Number(bz.zimmer?.basispreis).toFixed(2)),
         hotel: {
           id: bz.zimmer?.hotel?.hotel_id,
-          title: bz.zimmer?.hotel?.name, // Wieder 'name' statt 'titel'
+          title: bz.zimmer?.hotel?.name,
           city: bz.zimmer?.hotel?.ort
         }
       })) || [],
@@ -180,7 +202,7 @@ export class BookingsService {
       pricePerNight: Number(r.basispreis),
       hotel: { 
         id: r.hotel?.hotel_id, 
-        title: r.hotel?.name, // Wieder 'name' statt 'titel'
+        title: r.hotel?.name, 
         city: r.hotel?.ort 
       }
     }));
