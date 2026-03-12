@@ -9,4 +9,6 @@ export class HotelListItemDto {
   country: string;
   slug: string;
   featureIds: number[];
+  latitude: number | null; 
+  longitude: number | null;
 }

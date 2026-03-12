@@ -195,7 +195,9 @@ async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' 
       previewImageUrl: hotel.bilder?.[0]?.pfad || '',
       country: hotel.land,
       slug: hotel.slug || hotel.name.toLowerCase().replace(/\s+/g, '-'),
-      featureIds: hotel.hotelAusstattungen?.map(ha => (ha as any).ausstattung_id) || []
+      featureIds: hotel.hotelAusstattungen?.map(ha => (ha as any).ausstattung_id) || [],
+      latitude: (hotel as any).latitude,
+      longitude: (hotel as any).longitude
     };
   }
 
