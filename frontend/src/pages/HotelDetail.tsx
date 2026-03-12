@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Star, MapPin, Check, ArrowLeft, BedDouble, Loader2, CheckCircle, Info } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice} from "@/lib/utils";
 import { parse, isValid, format, addDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
@@ -57,25 +57,53 @@ export default function HotelDetail() {
   const toggleRoom = (roomId: string) => setSelectedRooms(prev => prev.includes(roomId) ? prev.filter(id => id !== roomId) : [...prev, roomId]);
 
   const submitBooking = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!dateRange?.from || !dateRange?.to) return;
-      setIsBookingLoading(true); setBookingError(null);
-      
-      const finalRoomIds: string[] = [];
-      selectedRooms.forEach(roomId => { for (let i = 0; i < calc.multiplier; i++) finalRoomIds.push(roomId); });
+    e.preventDefault();
+    if (!dateRange?.from || !dateRange?.to) return;
+    
+    setIsBookingLoading(true); 
+    setBookingError(null);
+    
+    // 1. Zimmer-IDs in Zahlen umwandeln (wie vom Backend gefordert)
+    // Wir erstellen ein Array, das die ID so oft enthält, wie die Zimmeranzahl (multiplier) gewählt wurde
+    const finalRoomIds: number[] = [];
+    selectedRooms.forEach(roomId => { 
+      for (let i = 0; i < calc.multiplier; i++) {
+        finalRoomIds.push(Number(roomId)); 
+      } 
+    });
 
-      try {
-          const res = await fetch(`${API_BASE_URL}/bookings`, {
-              method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...bookingForm, from: format(dateRange.from, "yyyy-MM-dd"), to: format(dateRange.to, "yyyy-MM-dd"), howMany: calc.totalGuests, roomIds: finalRoomIds })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(res.status === 409 ? "Zimmer ausgebucht." : data.message || "Fehler.");
-          setBookingSuccessData(data);
-      } catch (err: any) { setBookingError(err.message); } finally { setIsBookingLoading(false); }
-  };
+    try {
+        const res = await fetch(`${API_BASE_URL}/bookings`, {
+            method: "POST", 
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              ...bookingForm, 
+              from: format(dateRange.from, "yyyy-MM-dd"), 
+              to: format(dateRange.to, "yyyy-MM-dd"), 
+              
+              // HIER DIE ENTSCHEIDENDE ÄNDERUNG:
+              // Wir senden die tatsächliche Anzahl der Personen (Erwachsene + Kinder)
+              howMany: adults + childrenCount, 
+              
+              roomIds: finalRoomIds 
+            })
+        });
 
-// AI-Ref: Skeleton-Loader-Layout
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(res.status === 409 ? "Zimmer ausgebucht." : data.message || "Fehler bei der Buchung.");
+        }
+
+        // Erfolg: Buchungsdaten für das Modal speichern
+        setBookingSuccessData(data);
+        
+    } catch (err: any) { 
+        setBookingError(err.message); 
+    } finally { 
+        setIsBookingLoading(false); 
+    }
+};
 
   if (isLoading) {
       return (
@@ -89,7 +117,6 @@ export default function HotelDetail() {
                <div className="container mx-auto p-4 mt-6">
                    <Skeleton className="h-[400px] md:h-[500px] w-full rounded-[32px]" />
                </div>
-
 
                <div className="container mx-auto p-4 flex flex-col lg:flex-row gap-12 mt-4">
                    <div className="w-full lg:w-2/3 space-y-6">
@@ -119,13 +146,12 @@ export default function HotelDetail() {
       );
   }
 
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20 relative">
         <BookingModal 
            isOpen={isBookingModalOpen} setIsOpen={setIsBookingModalOpen} hotelTitle={hotel.title} 
            successData={bookingSuccessData} error={bookingError} form={bookingForm} setForm={setBookingForm} 
-           submit={submitBooking} loading={isBookingLoading} price={calc.totalCents} resetRooms={() => setSelectedRooms([])}
+           submit={submitBooking} loading={isBookingLoading} price={calc.totalPrice} resetRooms={() => setSelectedRooms([])}
         />
 
         <div className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
@@ -141,26 +167,31 @@ export default function HotelDetail() {
         </div>
 
         <div className="container mx-auto p-4 mt-6">
-            <ImageGallery images={hotel.images} />
+            <ImageGallery images={hotel.images || []} />
         </div>
 
         <div className="container mx-auto p-4 flex flex-col lg:flex-row gap-12 relative">
             <div className="w-full lg:w-2/3 space-y-10">
                 <div>
                     <div className="flex items-center gap-1 mb-3">
-                        {Array.from({ length: hotel.stars }).map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
+                        {Array.from({ length: hotel.stars || 0 }).map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
                         <span className="ml-2 text-sm font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Hotel</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">{hotel.title}</h1>
                     <div className="flex items-center text-slate-600 font-medium text-lg"><MapPin className="w-5 h-5 mr-2 text-blue-600" /> {hotel.city}, {hotel.country}</div>
                 </div>
                 <Separator />
-                <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Ausstattung</h3>
-                    <div className="flex flex-wrap gap-3">
-                        {hotel.features?.map(feat => <span key={feat.id} className="px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold flex items-center border border-slate-200"><Check className="w-4 h-4 mr-2 text-green-600" /> {feat.label}</span>)}
+                
+                {/* Ausstattung - Falls dein Backend hier ein anderes Array schickt, müsstest du das noch anpassen */}
+                {hotel.features && hotel.features.length > 0 && (
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">Ausstattung</h3>
+                        <div className="flex flex-wrap gap-3">
+                            {hotel.features.map((feat: any) => <span key={feat.id} className="px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold flex items-center border border-slate-200"><Check className="w-4 h-4 mr-2 text-green-600" /> {feat.titel || feat.label}</span>)}
+                        </div>
                     </div>
-                </div>
+                )}
+                
                 <div>
                      <h3 className="text-lg font-bold text-slate-900 mb-2">Über diese Unterkunft</h3>
                      <p className="text-slate-600 leading-8 text-lg">{hotel.description || "Keine Beschreibung verfügbar."}</p>
@@ -184,7 +215,7 @@ export default function HotelDetail() {
                                          </div>
                                      </div>
                                      {(!dateRange?.from || !dateRange?.to) && <p className="text-xs text-red-500 mt-2 px-2">Bitte Zeitraum wählen</p>}
-                                     {(dateRange?.from && dateRange?.to) && <p className="text-xs text-slate-400 mt-2 text-right px-2">{calc.safeNights} Nächte gewählt</p>}
+                                     {(dateRange?.from && dateRange?.to) && <p className="text-xs text-slate-400 mt-2 text-right px-2">{calc.nights} Nächte gewählt</p>}
                                 </div>
                                 <Separator className="bg-slate-100" />
                                 <div className="flex justify-between items-center px-2">
@@ -198,15 +229,17 @@ export default function HotelDetail() {
                             <Separator />
                             <div>
                                 <h4 className="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><BedDouble className="w-3 h-3" /> Verfügbare Zimmer</h4>
-                                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                                <div className="space-y-3 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                     {hotel.rooms?.map(room => {
-                                        const isSelected = selectedRooms.includes(room.id);
+                                        // Manche Backends schicken die ID als number (zimmer_id), deshalb fangen wir beide Fälle ab
+                                        const roomId = room.id || room.zimmer_id?.toString();
+                                        const isSelected = selectedRooms.includes(roomId);
                                         return (
-                                            <div key={room.id} onClick={() => toggleRoom(room.id)} className={`relative p-3 rounded-xl border transition-all cursor-pointer group ${isSelected ? 'border-blue-600 bg-blue-50 ring-1' : 'border-slate-200 hover:border-blue-400 bg-white'}`}>
-                                                <div className="flex justify-between items-start mb-1"><span className="font-bold text-sm text-slate-800">{room.name}</span>{isSelected && <Check className="w-4 h-4 text-blue-600" />}</div>
-                                                <div className="text-xs text-slate-500 mb-2">Max. {room.maxGuests} Pers.</div>
+                                            <div key={roomId} onClick={() => toggleRoom(roomId)} className={`relative p-3 rounded-xl border transition-all cursor-pointer group ${isSelected ? 'border-blue-600 bg-blue-50 ring-1' : 'border-slate-200 hover:border-blue-400 bg-white'}`}>
+                                                <div className="flex justify-between items-start mb-1"><span className="font-bold text-sm text-slate-800">{room.bezeichnung}</span>{isSelected && <Check className="w-4 h-4 text-blue-600" />}</div>
+                                                <div className="text-xs text-slate-500 mb-2">Max. {room.max_anzahl} Pers.</div>
                                                 <div className="flex justify-between items-end mt-2">
-                                                    <span className="font-bold text-slate-900">{formatPrice(room.pricePerNight)} <span className="text-xs font-normal text-slate-400">/ Nacht</span></span>
+                                                    <span className="font-bold text-slate-900">{formatPrice(room.basispreis)} <span className="text-xs font-normal text-slate-400">/ Nacht</span></span>
                                                     <span className={`text-xs font-bold px-2 py-1 rounded ${isSelected ? 'text-red-500' : 'text-blue-600'}`}>{isSelected ? "Entfernen" : "Hinzufügen"}</span>
                                                 </div>
                                             </div>
@@ -218,7 +251,7 @@ export default function HotelDetail() {
                             <div className="flex justify-between items-end">
                                 <span className="font-bold text-lg text-slate-700">Gesamt</span>
                                 <div className="text-right">
-                                    <span className="block text-3xl font-extrabold text-blue-600 leading-none">{formatPrice(calc.totalCents)}</span>
+                                    <span className="block text-3xl font-extrabold text-blue-600 leading-none">{formatPrice(calc.totalPrice)}</span>
                                     {selectedRooms.length > 0 && <span className="text-xs text-slate-400 font-medium">inkl. Steuern für {calc.effectiveRoomsCount} Zimmer</span>}
                                 </div>
                             </div>
@@ -245,8 +278,6 @@ export default function HotelDetail() {
   );
 }
 
-//AI-Ref: Smart-Dumb-Component
-
 function BookingModal({ isOpen, setIsOpen, hotelTitle, successData, error, form, setForm, submit, loading, price, resetRooms }: any) {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -258,7 +289,7 @@ function BookingModal({ isOpen, setIsOpen, hotelTitle, successData, error, form,
                         <DialogDescription className="text-slate-600 mb-6">Vielen Dank, {successData.firstName}. Ihre Buchung im <strong>{hotelTitle}</strong> ist erfolgreich.</DialogDescription>
                         <div className="bg-slate-50 w-full p-4 rounded-xl border border-slate-200 mb-6">
                             <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Ihr Buchungscode</span>
-                            <span className="text-2xl font-mono font-bold text-blue-600">{successData.bookingCode}</span>
+                            <span className="text-2xl font-mono font-bold text-blue-600">{successData.bookingCode || "Erfolgreich gebucht"}</span>
                         </div>
                         <Button className="w-full h-12 text-lg rounded-xl" onClick={() => { setIsOpen(false); resetRooms(); }}>Schließen & Zurück</Button>
                     </div>

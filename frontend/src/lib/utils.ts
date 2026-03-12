@@ -10,7 +10,7 @@ export const formatPrice = (cents: number | undefined | null): string => {
  return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
-  }).format(cents / 100);
+  }).format(cents);
 };
 
 
