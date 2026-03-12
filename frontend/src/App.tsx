@@ -14,6 +14,7 @@ import CreateAdminHotel from './pages/CreateAdminHotel';
 import EditAdminHotel from './pages/EditAdminHotel';
 import Listview from './pages/Listview';
 import HotelDetail from './pages/HotelDetail';
+import Bookings from './pages/Bookings';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/search" element={<Listview />} />
           <Route path="/hotels/:slug" element={<HotelDetail />} />
+          <Route path="/bookings" element={<Bookings />} />
           
           <Route path="/owner/hotels/edit" element={<EditHotel />} />
           <Route path="/owner/dashboard" element={<OwnerDashboard />} />
