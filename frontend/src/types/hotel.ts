@@ -46,23 +46,39 @@ export interface HotelSearchDto {
   features?: string[];
 }
 
+// NEU: Typ für die Bewertungen
+export interface BewertungDto {
+  sterne: number;
+  gast_name: string;
+  kommentar: string;
+}
+
 export interface HotelDetailDto {
-  hotelId: number;// Backend schickt id
+  hotelId: number;
   slug: string;
-  title: string; // Backend schickt title, nicht name!
-  description: string; // Backend schickt description!
-  city: string; // Backend schickt city!
-  country: string; // Backend schickt country!
-  stars: number; // Backend schickt stars, nicht hotelsterne!
   
-  // Diese fehlen im aktuellen JSON, sind aber evtl. im Backend noch vorhanden.
-  // Mache sie optional (?), damit kein Fehler fliegt, falls sie fehlen.
+  // Alte / Englische Felder (Fallback)
+  title: string; 
+  description: string; 
+  city: string; 
+  country: string; 
+  stars: number; 
+  
+  // NEUE Felder aus der Postgres-Datenbank (optional mit '?' gemacht)
+  name?: string;
+  beschreibung?: string;
+  ort?: string;
+  land?: string;
+  strasse?: string;
+  plz?: string;
+  bewertungen?: BewertungDto[];
+  
   stornogebuehr_prozent?: number;
   kostenlos_stornierbar_bis_stunden?: number;
   latitude?: number;
   longitude?: number;
   
-  features: AusstattungDto[]; // Backend nennt das Array "features", auch wenn der Inhalt deutsch ist!
+  features: AusstattungDto[]; 
   images: ImageDto[];
   rooms: HotelRoomDto[];
 }
