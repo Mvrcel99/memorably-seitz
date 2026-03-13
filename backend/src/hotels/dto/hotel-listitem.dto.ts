@@ -11,4 +11,5 @@ export class HotelListItemDto {
   featureIds: number[];
   latitude: number | null; 
   longitude: number | null;
+  status: 'active' | 'inactiv';
 }

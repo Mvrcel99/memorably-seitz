@@ -93,7 +93,7 @@ export class BookingsService {
         preis_pro_nacht: totalPricePerNight,
         zahlungsdatum: new Date(),
         kunde_id: kunde.benutzer_id,
-        zahlungsmethode_id: 1
+         zahlungsmethode_id: dto.zahlungsmethode_id
       });
 
       const savedBooking = await manager.save(booking);
