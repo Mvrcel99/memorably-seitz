@@ -3,7 +3,10 @@ import { BewertungService } from './bewertung.service';
 import { CreateBewertungDto } from './dto/create-bewertung.dto';
 import { UpdateBewertungDto } from './dto/update-bewertung.dto';
 
-@Controller('bewertung')
+@Controller({
+  path: 'bewertungen',
+  version: '1',
+})
 export class BewertungController {
   constructor(private readonly bewertungService: BewertungService) {}
 
