@@ -9,6 +9,7 @@ import { AuthenticatedUser, UserRole } from "./casl.utils";
 import { Buchung } from "../../bookings/entities/booking.entity";
 import { HotelBild } from "../../images/hotel-image/entities/hotel-image.entity";
 import { ZimmerBild } from "../../images/room-image/entities/room-image.entity"; 
+import { Bewertung } from "../../bewertung/entities/bewertung.entity";
 
 export type AppAbility = PureAbility<[Action, AbilitySubject]>;
 
@@ -44,6 +45,12 @@ export class CaslAbilityFactory {
 
             
             can(Action.Read, Buchung, { 'hotel.besitzer_id': user.id });
+        }
+
+        else if (user.role === UserRole.KUNDE) {
+            can(Action.Create, Bewertung);
+            can(Action.Update, Bewertung, { 'buchung.kunde_id': user.id });
+            can(Action.Delete, Bewertung, { 'buchung.kunde_id': user.id });
         }
     
         return build({
