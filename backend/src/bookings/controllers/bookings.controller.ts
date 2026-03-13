@@ -5,7 +5,7 @@ import { CreateBookingDto } from '../dto/create-booking.dto';
 import { BookingLookupDto } from '../dto/booking-lookup.dto';
 
 @Controller({
-  path: 'bewertungen',
+  path: 'bookings',
   version: '1',
 })
 export class BookingsController {
