@@ -23,8 +23,8 @@ export const useOwnerDashboard = () => {
         cleanPath = cleanPath.replace('/uploads/', '/images/');
     }
     
-    const baseUrl = API_BASE_URL.replace(/\/api(\/v1)?$/, '');
-    return `${baseUrl}${cleanPath}`;
+    const baseUrl = API_BASE_URL.replace(/\/$/, ''); 
+     return `${baseUrl}${cleanPath}`;
   };
 
   const fetchData = useCallback(async () => {
