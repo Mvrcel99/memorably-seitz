@@ -17,46 +17,42 @@ export class BewertungService {
     private readonly buchungRepo: Repository<Buchung>,
   ) {}
  
-  async create(user: AuthenticatedUser, dto: CreateBewertungDto): Promise<BewertungResponseDto> {
-    // Buchung laden und prüfen
+async create(dto: CreateBewertungDto): Promise<BewertungResponseDto> {
     const buchung = await this.buchungRepo.findOne({
       where: { buchungs_id: dto.buchungs_id },
-      relations: ['bewertung'],
+      relations: ['bewertung', 'kunde', 'kunde.benutzer'],
     });
- 
+
     if (!buchung) {
       throw new NotFoundException(`Buchung ${dto.buchungs_id} nicht gefunden.`);
     }
- 
-    // Nur der Kunde der Buchung darf bewerten
-    if (buchung.kunde_id !== user.id) {
+
+    // Prüfen ob die Email zum Kunden der Buchung gehört
+    if (buchung.kunde?.benutzer?.email !== dto.email) {
       throw new ForbiddenException('Du kannst nur deine eigenen Buchungen bewerten.');
     }
- 
-    // Buchung muss abgeschlossen sein (checkout in Vergangenheit)
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (new Date(buchung.checkout) >= today) {
       throw new BadRequestException('Du kannst erst nach dem Checkout bewerten.');
     }
- 
-    // Buchung darf nicht storniert sein
+
     if (buchung.stornodatum) {
       throw new BadRequestException('Stornierte Buchungen können nicht bewertet werden.');
     }
- 
-    // Pro Buchung nur eine Bewertung
+
     if (buchung.bewertung) {
       throw new ConflictException('Diese Buchung wurde bereits bewertet.');
     }
- 
+
     const bewertung = this.bewertungRepo.create({
       buchungs_id: dto.buchungs_id,
       titel: dto.titel,
       text: dto.text,
       sterne: dto.sterne,
     });
- 
+
     const saved = await this.bewertungRepo.save(bewertung);
     return this.mapToDto(saved, buchung);
   }

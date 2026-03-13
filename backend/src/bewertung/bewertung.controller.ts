@@ -20,13 +20,10 @@ import { Bewertung } from './entities/bewertung.entity';
 export class BewertungController {
   constructor(private readonly bewertungService: BewertungService) {}
 
-  @Post()
-  create(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body() dto: CreateBewertungDto,
-  ) {
-    return this.bewertungService.create(user, dto);
-  }
+@Post()
+create(@Body() dto: CreateBewertungDto) {
+  return this.bewertungService.create(dto);
+}
 
   @Get('hotel/:hotelId')
   findByHotel(@Param('hotelId', ParseIntPipe) hotelId: number) {

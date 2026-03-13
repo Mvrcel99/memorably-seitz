@@ -1,6 +1,10 @@
-import { IsInt, IsString, Min, Max, MinLength, MaxLength } from 'class-validator';
+import { IsInt, IsString, Min, Max, MinLength, MaxLength, IsEmail } from 'class-validator';
  
 export class CreateBewertungDto {
+
+    @IsEmail()
+  email: string;
+
   @IsInt()
   buchungs_id: number;
  
