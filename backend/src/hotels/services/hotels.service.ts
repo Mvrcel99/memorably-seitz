@@ -386,7 +386,7 @@ async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' 
 
       minPricePerNight: startingPrice ?? (hotel.zimmer?.[0]?.basispreis || 0),
 
-      previewImageUrl: hotel.bilder?.[0]?.pfad || '',
+      previewImageUrl: hotel.bilder?.[1]?.pfad || '',
 
       country: hotel.land,
 
