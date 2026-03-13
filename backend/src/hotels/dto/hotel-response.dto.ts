@@ -13,4 +13,5 @@ export class HotelResponseDto {
   features: FeatureDto[];
   images: ImageDto[];
   rooms: RoomDto[];
+  status: 'active' | 'inactiv';
 }

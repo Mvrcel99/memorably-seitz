@@ -159,11 +159,11 @@ export class HotelsService {
     return hotel;
   }
 
-async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' | 'deactivated') {
+async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' | 'inactiv') {
     const hotel = await this.hotelRepo.findOne({ where: { hotel_id: hotelId } });
     if (!hotel) throw new NotFoundException(`Hotel ${hotelId} nicht gefunden`);
 
-    if (status === 'deactivated') {
+    if (status === 'inactiv') {
         const activeBuchungen = await this.buchungRepo
             .createQueryBuilder('buchung')
             .innerJoin('buchung.buchungZimmer', 'bz')
@@ -194,6 +194,7 @@ async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' 
       minPricePerNight: startingPrice ?? (hotel.zimmer?.[0]?.basispreis || 0),
       previewImageUrl: hotel.bilder?.[0]?.pfad || '',
       country: hotel.land,
+      status: hotel.status,
       slug: hotel.slug || hotel.name.toLowerCase().replace(/\s+/g, '-'),
       featureIds: hotel.hotelAusstattungen?.map(ha => (ha as any).ausstattung_id) || [],
       latitude: (hotel as any).latitude,
@@ -210,6 +211,7 @@ async setHotelStatus(user: AuthenticatedUser, hotelId: number, status: 'active' 
       city: hotel.ort,
       country: hotel.land,
       stars: hotel.hotelsterne,
+      status: hotel.status,
       features: hotel.hotelAusstattungen?.map(ha => ({
         ausstattung_id: ha.ausstattung?.ausstattung_id,
         titel: (ha.ausstattung as any)?.name || (ha.ausstattung as any)?.titel || 'Unbenannt',

@@ -46,5 +46,8 @@ export class Zimmer {
 
   @OneToMany(() => ZimmerBild, (bild) => bild.zimmer)
   bilder: ZimmerBild[];
+
+  @Column({ name: 'hotel_id' })  // ← das fehlt
+  hotel_id: number;
 }
 

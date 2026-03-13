@@ -49,7 +49,7 @@ export class AdminHotelsController {
     @CheckAbilities({ action: Action.Update, subject: Hotel })
     async setHotelStatus(
         @Param('id', ParseIntPipe) hotelId: number,
-        @Body() body: { status: 'active' | 'deactivated' },
+        @Body() body: { status: 'active' | 'inactiv' },
         @CurrentUser() user: AuthenticatedUser
     ) {
         return this.hotelService.setHotelStatus(user, hotelId, body.status);

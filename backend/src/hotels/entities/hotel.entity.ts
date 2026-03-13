@@ -26,7 +26,7 @@ export class Hotel {
   slug: string;
 
   @Column({ default: 'active' })
-  status: string;
+  status: 'active' | 'inactiv' = 'active';
 
   @Column('text')
   beschreibung: string;
@@ -66,4 +66,4 @@ export class Hotel {
 
   @OneToMany(() => Zimmer, (zimmer) => zimmer.hotel)
   zimmer: Zimmer[];
-}
+} 
