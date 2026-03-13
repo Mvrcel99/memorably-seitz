@@ -15,9 +15,11 @@ import { FeaturesModule } from './features/features.module';
 import { HotelImageModule } from './images/hotel-image/hotel-image.module';
 import { RoomImageModule } from './images/room-image/room-image.module';
 import { UsersModule } from './users/users.module';
+import { BewertungModule } from './bewertung/bewertung.module';
 
 import { AuthModule } from './_common/auth/auth.module';
 import { CaslModule } from './_common/casl/casl.module';
+
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { CaslModule } from './_common/casl/casl.module';
     UsersModule,
     AuthModule,
     CaslModule,
+    BewertungModule
   ],
   controllers: [AppController],
   providers: [AppService],

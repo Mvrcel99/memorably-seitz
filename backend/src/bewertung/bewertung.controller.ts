@@ -16,7 +16,7 @@ import { Bewertung } from './entities/bewertung.entity';
   path: 'bewertungen',
   version: '1',
 })
-@UseGuards(AuthGuard, AbilitiesGuard)
+// @UseGuards(AuthGuard, AbilitiesGuard)
 export class BewertungController {
   constructor(private readonly bewertungService: BewertungService) {}
 

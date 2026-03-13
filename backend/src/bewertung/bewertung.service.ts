@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBewertungDto } from './dto/create-bewertung.dto';
 import { UpdateBewertungDto } from './dto/update-bewertung.dto';
-import { Repository } from 'typeorm/browser/repository/Repository.js';
+import { Repository } from 'typeorm';
 import { Buchung } from '../bookings/entities/booking.entity';
-import { InjectRepository } from '@nestjs/typeorm/dist/common/typeorm.decorators';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Bewertung } from './entities/bewertung.entity';
 import { BewertungResponseDto } from './dto/response-bewertung.dto';
 import { AuthenticatedUser } from 'src/_common/casl/casl.utils';
