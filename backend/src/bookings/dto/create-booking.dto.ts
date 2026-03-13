@@ -24,4 +24,7 @@ export class CreateBookingDto {
   @IsNumber({}, { each: true }) // Geändert: Zimmer-IDs sind jetzt Zahlen
   @ArrayMinSize(1)
   roomIds: number[];
+
+    @IsNumber()
+  zahlungsmethode_id: number;
 }
