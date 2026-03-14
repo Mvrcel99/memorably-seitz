@@ -75,4 +75,16 @@ export class ResponseBookingDto {
   @IsOptional()
   @IsDateString()
   stornoDate?: string | null;
+
+  @IsNumber()
+  @IsOptional()
+  zahlungsmethode_id?: number | null;
+
+  @IsNumber()
+  @IsOptional()
+  stornogebuehr_prozent?: number | null;
+
+  @IsNumber()
+  @IsOptional()
+  kostenlos_stornierbar_bis_stunden?: number | null;
 }

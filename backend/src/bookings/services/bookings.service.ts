@@ -118,7 +118,7 @@ export class BookingsService {
         buchungs_id: Number(query.bookingCode),
         kunde: { benutzer: { email: query.email } }
       },
-      relations: ['buchungZimmer', 'buchungZimmer.zimmer', 'buchungZimmer.zimmer.hotel', 'kunde', 'kunde.benutzer']
+      relations: ['buchungZimmer', 'buchungZimmer.zimmer', 'buchungZimmer.zimmer.hotel', 'kunde', 'kunde.benutzer',   'zahlungsmethode'  ]
     });
 
     if (!booking) throw new NotFoundException('Buchung nicht gefunden.');
@@ -196,6 +196,11 @@ export class BookingsService {
     response.createdAt = booking.zahlungsdatum ? new Date(booking.zahlungsdatum).toISOString() : new Date().toISOString();
     response.stornoDate = booking.stornodatum ? new Date(booking.stornodatum).toISOString() : null;
     
+    const firstHotel = booking.buchungZimmer?.[0]?.zimmer?.hotel;
+    response.zahlungsmethode_id = booking.zahlungsmethode_id ?? null;
+    response.stornogebuehr_prozent = firstHotel?.stornogebuehr_prozent ?? null;
+    response.kostenlos_stornierbar_bis_stunden = firstHotel?.kostenlos_stornierbar_bis_stunden ?? null;
+
     response.rooms = rooms.map(r => ({
       id: r.zimmer_id,
       name: r.bezeichnung,
