@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, ImageOff } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 
-// HIER SIND WIR WIEDER BEI URL UND ALT:
 interface ImageGalleryProps {
   images: { url: string; alt: string; sortOrder?: number }[];
 }

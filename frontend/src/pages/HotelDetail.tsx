@@ -27,7 +27,6 @@ export default function HotelDetail() {
   
   const { hotel, isLoading, error } = useHotelDetail(slug);
 
-  // --- BUCHUNGS-STATES ---
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
   const [adults, setAdults] = useState(() => Number(searchParams.get("adults")) || 2);
   const [childrenCount, setChildrenCount] = useState(() => Number(searchParams.get("children")) || 0);
@@ -46,7 +45,6 @@ export default function HotelDetail() {
   
   const [bookingForm, setBookingForm] = useState({ firstName: "", lastName: "", email: "", paymentMethodId: "1" });
 
-  // --- BEWERTUNGS-STATES ---
   const [reviewStars, setReviewStars] = useState(5);
   const [reviewHover, setReviewHover] = useState(0);
   const [reviewTitle, setReviewTitle] = useState("");
@@ -122,17 +120,14 @@ export default function HotelDetail() {
     setReviewSubmitError(null);
 
     try {
-        // Sicherstellen, dass die URL sauber formatiert ist
         const baseUrl = API_BASE_URL.replace(/\/$/, ""); 
         
-        // Token für die Authentifizierung holen
         const token = localStorage.getItem("token") || "";
 
         const res = await fetch(`${baseUrl}/bewertungen`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                // Hier schicken wir das JWT-Token mit, wie von Jonas gefordert
                 "Authorization": `Bearer ${token}` 
             },
             body: JSON.stringify({
@@ -147,7 +142,6 @@ export default function HotelDetail() {
         const data = await res.json();
 
         if (!res.ok) {
-            // Spezifische Fehlerbehandlung für fehlende Rechte (401/403)
             if (res.status === 401 || res.status === 403) {
                 throw new Error("Zugriff verweigert: Sie müssen eingeloggt sein, um eine Bewertung abzugeben.");
             }
@@ -291,7 +285,6 @@ export default function HotelDetail() {
                         )}
                     </div>
 
-                    {/* INTERAKTIVES BEWERTUNGS-FORMULAR */}
                     <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm mt-8">
                         <h4 className="font-bold text-slate-900 mb-2 text-xl">Erfahrungen teilen</h4>
                         <p className="text-slate-500 text-sm mb-6">Bitte geben Sie Ihre Buchungsdaten ein, um eine verifizierte Bewertung zu schreiben.</p>

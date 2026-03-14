@@ -25,7 +25,7 @@ export const DestinationSearch = ({ value, onChange }: DestinationSearchProps) =
       }
 
       try {
-        // AI-Ref: API-Base-URL-Fix
+     
         const response = await fetch(`${API_BASE_URL}/hotels`);
         
         if (response.ok) {

@@ -1,9 +1,7 @@
-// src/types/hotel.ts
-
 export interface ImageDto {
   id: number;
-  url: string; // Backend schickt url, nicht pfad!
-  alt: string; // Backend schickt alt, nicht alt_text!
+  url: string; 
+  alt: string; 
   sortOrder: number;
 }
 
@@ -46,7 +44,6 @@ export interface HotelSearchDto {
   features?: string[];
 }
 
-// NEU: Typ für die Bewertungen
 export interface BewertungDto {
   sterne: number;
   gast_name: string;
@@ -57,14 +54,12 @@ export interface HotelDetailDto {
   hotelId: number;
   slug: string;
   
-  // Alte / Englische Felder (Fallback)
   title: string; 
   description: string; 
   city: string; 
   country: string; 
   stars: number; 
   
-  // NEUE Felder aus der Postgres-Datenbank (optional mit '?' gemacht)
   name?: string;
   beschreibung?: string;
   ort?: string;

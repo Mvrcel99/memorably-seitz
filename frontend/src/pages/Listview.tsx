@@ -14,7 +14,7 @@ import { Map } from "@/components/ui/map";
 import { DestinationSearch } from "@/components/ui/destination-search";
 import { DateSearch } from "@/components/ui/date-search";
 import { GuestSearch } from "@/components/ui/guest-search";
-import { API_BASE_URL } from "@/lib/api"; // NEU: Import der Basis-URL
+import { API_BASE_URL } from "@/lib/api"; 
 
 function useHotelSearch(searchParams: URLSearchParams) {
   const [hotels, setHotels] = useState<HotelSearchDto[]>([]);
@@ -26,13 +26,11 @@ function useHotelSearch(searchParams: URLSearchParams) {
       setIsLoading(true); setErrorMsg(null);
       const apiQuery = new URLSearchParams();
       
-      // ANPASSUNG: Das Backend erwartet jetzt "ort" statt "city"
       if (searchParams.get("city")) apiQuery.append("ort", searchParams.get("city")!);
       if (searchParams.get("from")) apiQuery.append("from", searchParams.get("from")!);
       if (searchParams.get("to")) apiQuery.append("to", searchParams.get("to")!);
 
       try {
-        // ANPASSUNG: Nutzung der API_BASE_URL und des neuen Endpunkts "/hotel"
         const response = await fetch(`${API_BASE_URL}/hotels?${apiQuery.toString()}`);
         if (!response.ok) throw new Error(response.status === 400 ? "Ungültige Suchanfrage." : "Fehler beim Laden.");
         setHotels(await response.json());
@@ -54,7 +52,6 @@ export default function Listview() {
   
   const { hotels, isLoading, errorMsg } = useHotelSearch(searchParams);
 
-// AI-Ref: Date-Parsing-URL
 
   const [city, setCity] = useState(searchParams.get("city") || "");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -112,7 +109,6 @@ export default function Listview() {
           <div className="w-full lg:w-3/5 flex flex-col h-full overflow-hidden">
             <h1 className="text-xl font-bold text-slate-900 mb-4">{hotels.length > 0 ? `${hotels.length} Unterkünfte gefunden` : "Suche..."}</h1>
 
-              {/* AI-Ref: Tailwind-Scrollbar-Hide */}
 
             <div className="flex-1 overflow-y-auto pr-2 pb-20 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 <HotelList hotels={hotels} isLoading={isLoading} />

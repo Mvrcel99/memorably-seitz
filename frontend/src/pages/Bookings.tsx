@@ -41,7 +41,6 @@ export default function Bookings() {
     }
   };
 
-  // --- LOGIK FÜR STATUS ---
   const isCancelled = booking?.status === "CANCELLED" || !!booking?.stornoDate;
   const isPastBooking = booking?.to ? isPast(endOfDay(parseISO(booking.to))) : false;
   const isInactive = isCancelled || isPastBooking;
@@ -53,7 +52,6 @@ export default function Bookings() {
       statusConfig = { label: "VERGANGEN", color: "bg-slate-500 text-white", icon: <History className="w-4 h-4" /> };
   }
 
-  // --- FIX 3: STORNOBEDINGUNGEN BERECHNEN (Unterstützt jetzt Unterstrich und camelCase) ---
   const hotelInfo = booking?.rooms?.[0]?.hotel;
   const stornoProzent = hotelInfo?.stornogebuehr_prozent || hotelInfo?.stornogebuehrProzent || 0;
   const stornoStunden = hotelInfo?.kostenlos_stornierbar_bis_stunden || hotelInfo?.kostenlosStornierbarBisStunden || 0;
@@ -64,13 +62,11 @@ export default function Bookings() {
       freeCancelDate = subHours(checkinTime, stornoStunden);
   }
 
-  // --- FIX 1: ZAHLUNGSMETHODE ZUORDNEN (Sucht jetzt auch in verschachtelten Objekten) ---
   const getPaymentMethodName = () => {
-      // Wir prüfen alle möglichen Orte, an denen das Backend die ID oder den Namen verstecken könnte
       const methodId = booking?.zahlungsmethode_id || booking?.paymentMethodId || booking?.paymentMethod?.id || booking?.zahlungsmethode?.id;
       const methodName = booking?.paymentMethod?.name || booking?.zahlungsmethode?.name;
 
-      if (methodName) return methodName; // Falls das Backend direkt "PayPal" als Text schickt
+      if (methodName) return methodName; 
 
       switch(String(methodId)) {
           case "1": return "Kreditkarte";
@@ -161,7 +157,6 @@ export default function Bookings() {
 
                     <div className="flex justify-between items-end pt-2">
                         <span className="text-lg font-bold text-slate-700">Gesamtbetrag</span>
-                        {/* FIX 2: Hier wird jetzt NICHT mehr multipliziert, sondern nur der reine Betrag angezeigt */}
                         <span className={`text-3xl font-extrabold ${isCancelled ? 'text-slate-400 line-through' : 'text-blue-600'}`}>
                             {formatPrice(booking.totalPrice)} 
                         </span>

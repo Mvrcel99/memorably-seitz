@@ -38,7 +38,6 @@ export function HotelMap({ hotels }: MapProps) {
             }
         });
 
-// AI-Ref: Map-Auto-Center
 
         if (validCoords.length > 0 && !hasAutoCentered) {
             const sumLat = validCoords.reduce((a, b) => a + b[0], 0);
