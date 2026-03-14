@@ -2,7 +2,7 @@
 
 export interface BookingDto {
   id: number;
-  buchungs_id?: number; // NEU: Deutsche ID aus dem Schema
+  buchungs_id?: number; 
   bookingCode: string;
   status: string;
   email: string;
@@ -11,32 +11,40 @@ export interface BookingDto {
   from: string; 
   to: string;   
   howMany: number; 
-  anzahl_gaeste?: number; // NEU: Deutsche Bezeichnung
+  anzahl_gaeste?: number; 
   totalPrice: number; 
   stornoDate: string | null;
   
-  // WUNSCH 3: ZAHLUNGSMETHODE
-  zahlungsmethode_id?: number; // NEU: Aus deinem Schema
-  paymentMethodId?: number;    // NEU: Falls Jonas camelCase nutzt
+  // ZAHLUNGSMETHODE (Flache IDs)
+  zahlungsmethode_id?: number; 
+  paymentMethodId?: number;    
+  
+  // NEU: Verschachtelte Zahlungsmethoden-Objekte (die Bookings.tsx jetzt abfragt)
+  paymentMethod?: { id: number | string; name: string };
+  zahlungsmethode?: { id: number | string; name: string };
   
   rooms: {
     id: number;
-    zimmer_id?: number;        // NEU: Falls zimmer_id kommt
+    zimmer_id?: number;        
     name: string; 
-    bezeichnung?: string;      // NEU: Deutscher Name
+    bezeichnung?: string;      
     pricePerNight: number; 
-    basispreis?: number;       // NEU: Deutscher Preis
+    basispreis?: number;       
     
     hotel: {
       id: number;
       title: string; 
-      name?: string;           // NEU: Falls 'name' statt 'title' kommt
+      name?: string;           
       city: string;  
-      ort?: string;            // NEU: Falls 'ort' statt 'city' kommt
+      ort?: string;            
       
-      // WUNSCH 2: STORNOBEDINGUNGEN
-      stornogebuehr_prozent?: number;           // NEU
-      kostenlos_stornierbar_bis_stunden?: number; // NEU
+      // STORNOBEDINGUNGEN (Snake Case - aus der Datenbank)
+      stornogebuehr_prozent?: number;           
+      kostenlos_stornierbar_bis_stunden?: number; 
+
+      // NEU: STORNOBEDINGUNGEN (Camel Case - falls das Backend es umwandelt)
+      stornogebuehrProzent?: number;
+      kostenlosStornierbarBisStunden?: number;
     };
   }[];
 }

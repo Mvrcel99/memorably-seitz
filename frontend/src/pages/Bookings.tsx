@@ -6,7 +6,6 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"; 
 import { formatPrice } from "@/lib/utils";
 import { Search, AlertTriangle, CheckCircle, MapPin, Calendar, Users, Ban, CreditCard, History } from "lucide-react";
-// NEU: Zusätzliche date-fns Funktionen importiert
 import { format, parseISO, isPast, endOfDay, subHours, addHours } from "date-fns";
 
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -42,16 +41,11 @@ export default function Bookings() {
     }
   };
 
-  // --- LOGIK FÜR STATUS (Storniert, Vergangen, Aktiv) ---
+  // --- LOGIK FÜR STATUS ---
   const isCancelled = booking?.status === "CANCELLED" || !!booking?.stornoDate;
-  
-  // WUNSCH 1: Prüfen, ob die Buchung vergangen ist (Datum nach dem Checkout-Tag)
   const isPastBooking = booking?.to ? isPast(endOfDay(parseISO(booking.to))) : false;
-  
-  // Wenn storniert oder vergangen, ist die Karte inaktiv/ausgegraut
   const isInactive = isCancelled || isPastBooking;
 
-  // Dynamische Status-Plakette
   let statusConfig = { label: "BESTÄTIGT", color: "bg-white text-blue-600", icon: <CheckCircle className="w-4 h-4" /> };
   if (isCancelled) {
       statusConfig = { label: "STORNIERT", color: "bg-red-500/20 text-red-200", icon: <Ban className="w-4 h-4" /> };
@@ -59,21 +53,26 @@ export default function Bookings() {
       statusConfig = { label: "VERGANGEN", color: "bg-slate-500 text-white", icon: <History className="w-4 h-4" /> };
   }
 
-  // --- WUNSCH 2: STORNOBEDINGUNGEN BERECHNEN ---
+  // --- FIX 3: STORNOBEDINGUNGEN BERECHNEN (Unterstützt jetzt Unterstrich und camelCase) ---
   const hotelInfo = booking?.rooms?.[0]?.hotel;
-  const stornoProzent = hotelInfo?.stornogebuehr_prozent || 0;
-  const stornoStunden = hotelInfo?.kostenlos_stornierbar_bis_stunden || 0;
+  const stornoProzent = hotelInfo?.stornogebuehr_prozent || hotelInfo?.stornogebuehrProzent || 0;
+  const stornoStunden = hotelInfo?.kostenlos_stornierbar_bis_stunden || hotelInfo?.kostenlosStornierbarBisStunden || 0;
   
   let freeCancelDate: Date | null = null;
   if (booking?.from && stornoStunden > 0) {
-      // Angenommene Check-in Zeit: 15:00 Uhr am Anreisetag
       const checkinTime = addHours(parseISO(booking.from), 15); 
       freeCancelDate = subHours(checkinTime, stornoStunden);
   }
 
-  // --- WUNSCH 3: ZAHLUNGSMETHODE ZUORDNEN ---
-  const getPaymentMethodName = (id?: number | string) => {
-      switch(String(id)) {
+  // --- FIX 1: ZAHLUNGSMETHODE ZUORDNEN (Sucht jetzt auch in verschachtelten Objekten) ---
+  const getPaymentMethodName = () => {
+      // Wir prüfen alle möglichen Orte, an denen das Backend die ID oder den Namen verstecken könnte
+      const methodId = booking?.zahlungsmethode_id || booking?.paymentMethodId || booking?.paymentMethod?.id || booking?.zahlungsmethode?.id;
+      const methodName = booking?.paymentMethod?.name || booking?.zahlungsmethode?.name;
+
+      if (methodName) return methodName; // Falls das Backend direkt "PayPal" als Text schickt
+
+      switch(String(methodId)) {
           case "1": return "Kreditkarte";
           case "2": return "PayPal";
           case "3": return "Überweisung";
@@ -81,8 +80,7 @@ export default function Bookings() {
           default: return "Unbekannt / Vor Ort";
       }
   };
-  // Fallback, falls die API "paymentMethodId" oder "zahlungsmethode_id" liefert
-  const paymentMethodName = getPaymentMethodName(booking?.zahlungsmethode_id || booking?.paymentMethodId);
+  const paymentMethodName = getPaymentMethodName();
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20 pt-28">
@@ -106,13 +104,12 @@ export default function Bookings() {
         {booking && (
             <Card className={`rounded-3xl shadow-xl overflow-hidden animate-in fade-in transition-all duration-500 ${isInactive ? 'border-slate-300 bg-slate-50' : 'border-slate-200'}`}>
                 
-                {/* DYNAMISCHER HEADER (Blau, Rot oder Grau) */}
                 <CardHeader className={`p-6 flex flex-row justify-between items-center transition-colors
                     ${isCancelled ? 'bg-red-600 text-white' : isPastBooking ? 'bg-slate-300 text-slate-700' : 'bg-blue-600 text-white'}
                 `}>
                     <div>
                         <CardTitle className={`text-2xl font-bold ${isCancelled ? 'line-through opacity-80' : ''}`}>Buchungsdetails</CardTitle>
-                        <span className="opacity-80 font-mono text-sm">Code: {booking.bookingCode}</span>
+                        <span className="opacity-80 font-mono text-sm">Code: {booking.bookingCode || booking.buchungs_id}</span>
                     </div>
                     <div className={`px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm ${statusConfig.color}`}>
                         {statusConfig.icon} {statusConfig.label}
@@ -123,7 +120,7 @@ export default function Bookings() {
                     <div className="flex flex-col gap-1">
                         <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Hotel</span>
                         <div className={`flex items-center text-lg font-bold ${isCancelled ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
-                            <MapPin className={`w-5 h-5 mr-2 ${isCancelled ? 'text-slate-400' : 'text-blue-600'}`} /> {hotelInfo?.title } ({hotelInfo?.city })
+                            <MapPin className={`w-5 h-5 mr-2 ${isCancelled ? 'text-slate-400' : 'text-blue-600'}`} /> {hotelInfo?.title || hotelInfo?.name} ({hotelInfo?.city || hotelInfo?.ort})
                         </div>
                     </div>
                     <Separator />
@@ -142,7 +139,6 @@ export default function Bookings() {
                     </div>
                     <Separator />
                     
-                    {/* ZIMMER & PREISE */}
                     <div>
                         <span className="text-xs text-slate-400 font-bold uppercase block mb-3">Gebuchte Zimmer</span>
                         <ul className="space-y-2">
@@ -155,7 +151,6 @@ export default function Bookings() {
                         </ul>
                     </div>
                     
-                    {/* WUNSCH 3: ZAHLUNGSMETHODE */}
                     <div className="bg-slate-100/50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-3 text-slate-600 font-medium">
                             <CreditCard className="w-5 h-5 text-slate-400" />
@@ -166,18 +161,17 @@ export default function Bookings() {
 
                     <div className="flex justify-between items-end pt-2">
                         <span className="text-lg font-bold text-slate-700">Gesamtbetrag</span>
+                        {/* FIX 2: Hier wird jetzt NICHT mehr multipliziert, sondern nur der reine Betrag angezeigt */}
                         <span className={`text-3xl font-extrabold ${isCancelled ? 'text-slate-400 line-through' : 'text-blue-600'}`}>
-                            {formatPrice(booking.totalPrice * (booking.howMany || 1))} {/* Fallback-Berechnung falls totalPrice fehlt */}
+                            {formatPrice(booking.totalPrice)} 
                         </span>
                     </div>
                 </CardContent>
 
-                {/* Stornierungs-Footer (Nur anzeigen, wenn NICHT storniert und NICHT vergangen) */}
                 {!isInactive && (
                     <CardFooter className="p-6 pt-0 flex-col items-stretch bg-white rounded-b-3xl">
                         <Button variant="destructive" className="w-full h-12 text-lg font-bold rounded-xl" onClick={() => setIsCancelConfirmOpen(true)}>Buchung stornieren</Button>
                         
-                        {/* WUNSCH 2: Detaillierte Stornobedingungen */}
                         <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
                             <p className="text-xs text-slate-500 font-medium leading-relaxed">
                                 {freeCancelDate ? (
@@ -202,7 +196,7 @@ export default function Bookings() {
             <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4 mx-auto sm:mx-0"><AlertTriangle className="w-8 h-8" /></div>
             <AlertDialogTitle className="text-2xl font-bold text-slate-900">Sind Sie sicher?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-600 text-base mt-2">
-                Möchten Sie Ihre Buchung für das <strong>{hotelInfo?.title}</strong> wirklich stornieren?
+                Möchten Sie Ihre Buchung für das <strong>{hotelInfo?.title || hotelInfo?.name}</strong> wirklich stornieren?
                 {stornoProzent > 0 && (
                      <span className="block mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100">
                         {freeCancelDate && isPast(freeCancelDate) 
