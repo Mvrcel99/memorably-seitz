@@ -198,6 +198,7 @@ export class BookingsService {
     
     const firstHotel = booking.buchungZimmer?.[0]?.zimmer?.hotel;
     response.zahlungsmethode_id = booking.zahlungsmethode_id ?? null;
+    response.zahlungsmethode = booking.zahlungsmethode?.bezeichnung ?? null;
     response.stornogebuehr_prozent = firstHotel?.stornogebuehr_prozent ?? null;
     response.kostenlos_stornierbar_bis_stunden = firstHotel?.kostenlos_stornierbar_bis_stunden ?? null;
 

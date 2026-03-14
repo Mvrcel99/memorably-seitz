@@ -80,6 +80,10 @@ export class ResponseBookingDto {
   @IsOptional()
   zahlungsmethode_id?: number | null;
 
+  @IsString() 
+  @IsOptional()
+  zahlungsmethode?: string | null;
+
   @IsNumber()
   @IsOptional()
   stornogebuehr_prozent?: number | null;
