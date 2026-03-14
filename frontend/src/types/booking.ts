@@ -15,10 +15,14 @@ export interface BookingDto {
   
   zahlungsmethode_id?: number; 
   paymentMethodId?: number;    
-  
   paymentMethod?: { id: number | string; name: string };
   zahlungsmethode?: { id: number | string; name: string };
   
+  stornogebuehr_prozent?: number;
+  stornogebuehrProzent?: number;
+  kostenlos_stornierbar_bis_stunden?: number;
+  kostenlosStornierbarBisStunden?: number;
+
   rooms: {
     id: number;
     zimmer_id?: number;        
@@ -26,6 +30,11 @@ export interface BookingDto {
     bezeichnung?: string;      
     pricePerNight: number; 
     basispreis?: number;       
+
+    stornogebuehr_prozent?: number;
+    stornogebuehrProzent?: number;
+    kostenlos_stornierbar_bis_stunden?: number;
+    kostenlosStornierbarBisStunden?: number;
     
     hotel: {
       id: number;
@@ -36,7 +45,6 @@ export interface BookingDto {
       
       stornogebuehr_prozent?: number;           
       kostenlos_stornierbar_bis_stunden?: number; 
-
       stornogebuehrProzent?: number;
       kostenlosStornierbarBisStunden?: number;
     };

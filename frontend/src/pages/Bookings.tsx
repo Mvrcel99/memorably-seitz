@@ -41,6 +41,7 @@ export default function Bookings() {
     }
   };
 
+
   const isCancelled = booking?.status === "CANCELLED" || !!booking?.stornoDate;
   const isPastBooking = booking?.to ? isPast(endOfDay(parseISO(booking.to))) : false;
   const isInactive = isCancelled || isPastBooking;
@@ -52,10 +53,27 @@ export default function Bookings() {
       statusConfig = { label: "VERGANGEN", color: "bg-slate-500 text-white", icon: <History className="w-4 h-4" /> };
   }
 
-  const hotelInfo = booking?.rooms?.[0]?.hotel;
-  const stornoProzent = hotelInfo?.stornogebuehr_prozent || hotelInfo?.stornogebuehrProzent || 0;
-  const stornoStunden = hotelInfo?.kostenlos_stornierbar_bis_stunden || hotelInfo?.kostenlosStornierbarBisStunden || 0;
-  
+
+  const firstRoom = booking?.rooms?.[0];
+  const hotelInfo = firstRoom?.hotel;
+
+  const stornoProzent = Number(
+      hotelInfo?.stornogebuehr_prozent || hotelInfo?.stornogebuehrProzent ||
+      firstRoom?.stornogebuehr_prozent || firstRoom?.stornogebuehrProzent ||
+      booking?.stornogebuehr_prozent || booking?.stornogebuehrProzent || 0
+  );
+
+  const stornoStunden = Number(
+      hotelInfo?.kostenlos_stornierbar_bis_stunden || hotelInfo?.kostenlosStornierbarBisStunden ||
+      firstRoom?.kostenlos_stornierbar_bis_stunden || firstRoom?.kostenlosStornierbarBisStunden ||
+      booking?.kostenlos_stornierbar_bis_stunden || booking?.kostenlosStornierbarBisStunden || 0
+  );
+
+
+  if (booking) {
+      console.log("Stornodaten aus dem Backend:", { stornoProzent, stornoStunden, komplettesBooking: booking });
+  }
+
   let freeCancelDate: Date | null = null;
   if (booking?.from && stornoStunden > 0) {
       const checkinTime = addHours(parseISO(booking.from), 15); 

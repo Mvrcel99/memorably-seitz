@@ -45,9 +45,18 @@ export interface HotelSearchDto {
 }
 
 export interface BewertungDto {
+  buchungs_id?: number;
+  titel?: string;
+  text?: string;
   sterne: number;
-  gast_name: string;
-  kommentar: string;
+  gast_name?: string;
+  kommentar?: string;
+  kunde?: {
+    vorname: string;
+    nachname: string;
+  };
+  checkin?: string;
+  checkout?: string;
 }
 
 export interface HotelDetailDto {
@@ -68,8 +77,14 @@ export interface HotelDetailDto {
   plz?: string;
   bewertungen?: BewertungDto[];
   
+ 
   stornogebuehr_prozent?: number;
   kostenlos_stornierbar_bis_stunden?: number;
+  
+ 
+  stornogebuehrProzent?: number;
+  kostenlosStornierbarBisStunden?: number;
+  
   latitude?: number;
   longitude?: number;
   
