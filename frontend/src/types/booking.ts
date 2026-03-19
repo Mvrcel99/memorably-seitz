@@ -1,5 +1,3 @@
-// src/types/booking.ts
-
 export interface BookingDto {
   id: number;
   buchungs_id?: number; 
@@ -15,14 +13,16 @@ export interface BookingDto {
   totalPrice: number; 
   stornoDate: string | null;
   
-  // ZAHLUNGSMETHODE (Flache IDs)
   zahlungsmethode_id?: number; 
   paymentMethodId?: number;    
-  
-  // NEU: Verschachtelte Zahlungsmethoden-Objekte (die Bookings.tsx jetzt abfragt)
   paymentMethod?: { id: number | string; name: string };
   zahlungsmethode?: { id: number | string; name: string };
   
+  stornogebuehr_prozent?: number;
+  stornogebuehrProzent?: number;
+  kostenlos_stornierbar_bis_stunden?: number;
+  kostenlosStornierbarBisStunden?: number;
+
   rooms: {
     id: number;
     zimmer_id?: number;        
@@ -30,6 +30,11 @@ export interface BookingDto {
     bezeichnung?: string;      
     pricePerNight: number; 
     basispreis?: number;       
+
+    stornogebuehr_prozent?: number;
+    stornogebuehrProzent?: number;
+    kostenlos_stornierbar_bis_stunden?: number;
+    kostenlosStornierbarBisStunden?: number;
     
     hotel: {
       id: number;
@@ -38,11 +43,8 @@ export interface BookingDto {
       city: string;  
       ort?: string;            
       
-      // STORNOBEDINGUNGEN (Snake Case - aus der Datenbank)
       stornogebuehr_prozent?: number;           
       kostenlos_stornierbar_bis_stunden?: number; 
-
-      // NEU: STORNOBEDINGUNGEN (Camel Case - falls das Backend es umwandelt)
       stornogebuehrProzent?: number;
       kostenlosStornierbarBisStunden?: number;
     };

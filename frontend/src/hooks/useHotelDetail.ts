@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import type { HotelDetailDto } from "@/types/hotel";
 import { API_BASE_URL } from "@/lib/api";
 
-// AI-Ref: Hook-Refactoring
-
 export function useHotelDetail(slug: string | undefined) {
   const [hotel, setHotel] = useState<HotelDetailDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);

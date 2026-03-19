@@ -1,9 +1,7 @@
-// src/types/hotel.ts
-
 export interface ImageDto {
   id: number;
-  url: string; // Backend schickt url, nicht pfad!
-  alt: string; // Backend schickt alt, nicht alt_text!
+  url: string; 
+  alt: string; 
   sortOrder: number;
 }
 
@@ -46,25 +44,31 @@ export interface HotelSearchDto {
   features?: string[];
 }
 
-// NEU: Typ für die Bewertungen
 export interface BewertungDto {
+  buchungs_id?: number;
+  titel?: string;
+  text?: string;
   sterne: number;
-  gast_name: string;
-  kommentar: string;
+  gast_name?: string;
+  kommentar?: string;
+  kunde?: {
+    vorname: string;
+    nachname: string;
+  };
+  checkin?: string;
+  checkout?: string;
 }
 
 export interface HotelDetailDto {
   hotelId: number;
   slug: string;
   
-  // Alte / Englische Felder (Fallback)
   title: string; 
   description: string; 
   city: string; 
   country: string; 
   stars: number; 
   
-  // NEUE Felder aus der Postgres-Datenbank (optional mit '?' gemacht)
   name?: string;
   beschreibung?: string;
   ort?: string;
@@ -73,8 +77,14 @@ export interface HotelDetailDto {
   plz?: string;
   bewertungen?: BewertungDto[];
   
+ 
   stornogebuehr_prozent?: number;
   kostenlos_stornierbar_bis_stunden?: number;
+  
+ 
+  stornogebuehrProzent?: number;
+  kostenlosStornierbarBisStunden?: number;
+  
   latitude?: number;
   longitude?: number;
   

@@ -21,7 +21,7 @@ export function useBookings() {
       const res = await fetch(`${API_BASE_URL}/bookings/cancel?email=${encodeURIComponent(email)}&bookingCode=${encodeURIComponent(code)}`, { method: "PATCH" });
       if (!res.ok) throw new Error("Stornierung fehlgeschlagen.");
       setBooking(await res.json()); 
-      return true; // Success
+      return true; 
     } catch (err: any) { setError(err.message); return false; }
   };
 
