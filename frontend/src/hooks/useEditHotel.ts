@@ -21,7 +21,6 @@ export const useEditHotel = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   
-  // NEUE STATES FÜR FEATURES
   const [allFeatures, setAllFeatures] = useState<any[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
 
@@ -79,7 +78,6 @@ export const useEditHotel = () => {
       setExistingImages(safeImages);
     }
 
-    // --- NEU: Alle verfügbaren Features vom Backend laden ---
     const fetchFeatures = async () => {
         try {
             const token = localStorage.getItem('accessToken');
@@ -139,7 +137,6 @@ export const useEditHotel = () => {
     }
   };
 
-  // --- NEU: Toggle-Funktion für Checkboxen ---
   const handleFeatureToggle = (featureId: number, isChecked: boolean) => {
       if (isChecked) {
           setSelectedFeatures(prev => [...prev, featureId]);
@@ -170,7 +167,7 @@ export const useEditHotel = () => {
           city: formData.city,
           country: formData.country,
           stars: isNaN(starsInt) ? 0 : starsInt,
-          featureIds: selectedFeatures // <--- HIER WERDEN DIE FEATURES MITGESCHICKT
+          featureIds: selectedFeatures
         })
       });
 
@@ -250,8 +247,8 @@ export const useEditHotel = () => {
     handleSubmit,
     getImageUrl,
     navigate,
-    allFeatures,         // <--- NEU
-    selectedFeatures,    // <--- NEU
-    handleFeatureToggle  // <--- NEU
+    allFeatures,         
+    selectedFeatures,    
+    handleFeatureToggle 
   };
 };

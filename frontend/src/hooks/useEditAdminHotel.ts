@@ -14,7 +14,7 @@ export const useEditAdminHotel = () => {
     description: "",
     city: "",
     country: "",
-    stars: "1" // Sterne starten bei 1 (Backend-Regel)
+    stars: "1" 
   });
 
   useEffect(() => {
@@ -27,7 +27,6 @@ export const useEditAdminHotel = () => {
     const { hotel } = location.state;
     console.log("Zu bearbeitendes Hotel geladen:", hotel);
     
-    // Fängt alle möglichen ID-Namen aus dem Backend ab
     const extractedId = hotel.id || hotel.hotel_id || hotel._id || hotel.hotelId;
     setHotelId(extractedId);
 
@@ -41,7 +40,7 @@ export const useEditAdminHotel = () => {
   }, [location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Verhindert, dass die Seite neu lädt
+    e.preventDefault();
     console.log("Button geklickt! Formular wird verarbeitet...");
     
     if (!hotelId) {
