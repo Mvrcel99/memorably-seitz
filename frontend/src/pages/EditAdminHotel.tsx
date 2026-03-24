@@ -23,7 +23,6 @@ const EditAdminHotel = () => {
 
         <Card className="border border-slate-200 shadow-xl bg-white rounded-2xl overflow-hidden">
             <CardContent className="p-8">
-                {/* Hier ist der Form-Tag, der den submit auslöst */}
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label>Hotelname (Title)</Label>

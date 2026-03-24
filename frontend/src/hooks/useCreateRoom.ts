@@ -111,7 +111,6 @@ export const useCreateRoom = () => {
       const newRoomId = newRoom.data?.zimmer_id || newRoom.zimmer_id || newRoom.id;
 
       if (selectedFiles.length > 0 && newRoomId) {
-         // HIER DIE ÄNDERUNG: Wir geben der map-Funktion den "index" mit!
          await Promise.all(selectedFiles.map(async (file, index) => {
              try {
                 const webpFile = await new Promise<File>((resolve, reject) => {
@@ -142,9 +141,8 @@ export const useCreateRoom = () => {
                 const formDataUpload = new FormData();
                 formDataUpload.append('image', webpFile);
                 
-                // HIER DIE MAGIE: Wir befriedigen die DTO-Validierung vom Backend!
                 formDataUpload.append('alt', webpFile.name); 
-                formDataUpload.append('sortOrder', String(index)); // 0 fürs erste Bild, 1 fürs zweite...
+                formDataUpload.append('sortOrder', String(index));
 
                 const imgRes = await fetch(`${API_BASE_URL}/owner/rooms/${newRoomId}/images`, {
                     method: 'POST',

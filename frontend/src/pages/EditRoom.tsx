@@ -35,7 +35,6 @@ const EditRoom = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* BILDER SEKTION */}
           <Card className="border-none shadow-sm overflow-hidden">
             <div className="bg-slate-100/50 border-b border-slate-100 px-6 py-4">
               <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -44,7 +43,6 @@ const EditRoom = () => {
             </div>
             <CardContent className="p-6 space-y-6">
               
-              {/* Bestehende Bilder */}
               {existingImages.length > 0 && (
                 <div className="space-y-3">
                   <Label className="text-slate-500 uppercase text-xs font-bold tracking-wider">Aktuell gespeicherte Bilder</Label>
@@ -69,7 +67,6 @@ const EditRoom = () => {
                 </div>
               )}
 
-              {/* Neue Bilder hinzufügen */}
               <div className="space-y-3 pt-4 border-t border-slate-100">
                 <Label className="text-slate-500 uppercase text-xs font-bold tracking-wider">Neue Bilder hinzufügen</Label>
                 
@@ -108,7 +105,6 @@ const EditRoom = () => {
             </CardContent>
           </Card>
 
-          {/* TEXT DATEN SEKTION */}
           <Card className="border-none shadow-sm">
             <div className="bg-slate-100/50 border-b border-slate-100 px-6 py-4">
               <h2 className="text-lg font-bold text-slate-800">Zimmer-Details</h2>
