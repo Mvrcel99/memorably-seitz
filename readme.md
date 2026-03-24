@@ -1,44 +1,43 @@
-# Memorably – Datenbankprojekt
+# Memorably – Lokales Setup
 
 ## Voraussetzungen
 
-* Docker Desktop installiert
-* Docker gestartet
-* Node.js installiert
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installiert und gestartet
 
 ---
 
-## Datenbank starten
+## Starten
 
 Im Repo-Root:
-
 ```bash
 docker compose up -d
 ```
 
-DB läuft dann auf:
-
-* Host: localhost
-* Port: 5432
-* Database: bookingdb
-* User: booking
-* Password: booking
+Beim ersten Start werden alle Images gebaut – das dauert ca. 2–3 Minuten.
 
 ---
 
-## Wichtig bei Schema-Änderungen
+## Zugriff
 
-`schema.sql` wird nur beim ersten Start ausgeführt.
+| Dienst     | URL                        |
+|------------|----------------------------|
+| Frontend   | http://localhost           |
+| Backend    | http://localhost/api/v1    |
+| pgAdmin    | http://localhost:5050      |
 
-Wenn das Schema geändert wurde:
+---
 
+## Stoppen
+```bash
+docker compose down
+```
+
+---
+
+## Datenbank zurücksetzen
+
+Falls die Datenbank neu initialisiert werden soll (z.B. nach Schema-Änderungen):
 ```bash
 docker compose down -v
 docker compose up -d
 ```
-
-`-v` löscht das Datenbank-Volume.
-
----
-
-
