@@ -92,6 +92,7 @@ export class BookingsService {
         anzahl_gaeste: dto.howMany,
         preis_pro_nacht: totalPricePerNight,
         zahlungsdatum: new Date(),
+        buchungsdatum: new Date(),
         kunde_id: kunde.benutzer_id,
          zahlungsmethode_id: dto.zahlungsmethode_id
       });
