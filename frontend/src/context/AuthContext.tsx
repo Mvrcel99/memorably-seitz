@@ -7,7 +7,6 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// AI-Ref: Global-Auth-Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {

@@ -102,7 +102,6 @@ const EditHotel = () => {
                         </div>
                     </div>
 
-                    {/* NEU: Features / Ausstattung */}
                     <div className="pt-6 border-t border-slate-200 mt-6 space-y-4">
                         <h3 className="text-lg font-semibold text-slate-900 flex items-center">
                             <Settings className="mr-2 h-5 w-5 text-blue-600" />
@@ -131,7 +130,6 @@ const EditHotel = () => {
                         )}
                     </div>
 
-                    {/* Bilder-Bereich (Hotel) */}
                     <div className="pt-6 border-t border-slate-200 mt-6 space-y-6">
                         <div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
@@ -139,7 +137,6 @@ const EditHotel = () => {
                                 Hotel-Bilder
                             </h3>
                             
-                            {/* Vorhandene Bilder löschen */}
                             <div className="mb-6">
                                 <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">Aktuell gespeicherte Bilder</Label>
                                 {existingImages.length > 0 ? (
@@ -172,7 +169,6 @@ const EditHotel = () => {
                                 )}
                             </div>
 
-                            {/* Neue Bilder hochladen */}
                             <div>
                                 <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">Neue Bilder hinzufügen</Label>
                                 <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-50 transition-colors relative">
@@ -190,7 +186,6 @@ const EditHotel = () => {
                                     <p className="text-xs text-slate-400 mt-1">PNG, JPG (werden automatisch optimiert)</p>
                                 </div>
 
-                                {/* Vorschau der neuen Bilder */}
                                 {previewUrls.length > 0 && (
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                                         {previewUrls.map((url, index) => (
