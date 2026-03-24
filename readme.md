@@ -41,29 +41,4 @@ docker compose up -d
 
 ---
 
-## Backend starten
-
-```bash
-cd backend
-npm install
-npm run start:dev
-```
-
-Health-Check:
-
-```
-http://localhost:3000/api/v1/health
-```
-
----
-
-## Frontend starten
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
----
 

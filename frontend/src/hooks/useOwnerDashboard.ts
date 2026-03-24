@@ -26,7 +26,7 @@ export const useOwnerDashboard = () => {
     }
     
     const baseUrl = API_BASE_URL.replace(/\/$/, ''); 
-     return `${baseUrl}${cleanPath}`;
+     return `${cleanPath}`;
   };
 
   const fetchData = useCallback(async () => {

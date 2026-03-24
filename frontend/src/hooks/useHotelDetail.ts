@@ -12,9 +12,14 @@ export function useHotelDetail(slug: string | undefined) {
           if (!slug) return;
           setIsLoading(true);
           try {
-              const res = await fetch(`${API_BASE_URL}/hotels/${slug}`);
-              if (!res.ok) throw new Error("Hotel konnte nicht geladen werden.");
-              setHotel(await res.json());
+            const res = await fetch(`${API_BASE_URL}/hotels/${slug}`);
+            if (!res.ok) throw new Error("Hotel konnte nicht geladen werden.");
+            const hotelData = await res.json();
+
+            const bewRes = await fetch(`${API_BASE_URL}/bewertungen/hotel/${hotelData.id}`);
+            const bewertungen = bewRes.ok ? await bewRes.json() : [];
+
+        setHotel({ ...hotelData, bewertungen });
           } catch (err: any) { setError(err.message); } finally { setIsLoading(false); }
       };
       fetchHotel();
